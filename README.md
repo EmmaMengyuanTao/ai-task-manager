@@ -1,6 +1,17 @@
 # AI Task Manager
 
-Starter code: daveyplate's [better-auth-nextjs-starter](https://github.com/daveyplate/better-auth-nextjs-starter) repository.
+- _Date Created_: 26 April 2025
+- _Host URL_: <>
+
+## Authors
+
+- [Shiwen(Lareina) Yang](sy796@cornell.edu)
+- [](@cornell.edu)
+- [](@cornell.edu)
+
+## Starter code
+
+daveyplate's [better-auth-nextjs-starter](https://github.com/daveyplate/better-auth-nextjs-starter) repository.
 
 ## Setup
 
