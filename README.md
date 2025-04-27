@@ -1,6 +1,6 @@
 # AI Task Manager
 
-Starter code from A6
+Starter code: daveyplate's [better-auth-nextjs-starter](https://github.com/daveyplate/better-auth-nextjs-starter) repository.
 
 ## Setup
 
