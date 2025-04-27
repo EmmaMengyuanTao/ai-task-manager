@@ -44,4 +44,4 @@ yarn-error.log*
 
 # workspace
 .turbo
-.vscode
+.vscode.env
