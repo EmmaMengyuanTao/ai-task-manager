@@ -11,7 +11,6 @@ import { todos, insertTodoSchema } from "@/database/schema"
 export async function createTodo(
     formData: FormData
 ): Promise<{ error?: string }> {
-    /* YOUR CODE HERE */
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -44,7 +43,6 @@ export async function createTodo(
 export async function toggleTodo(
     formData: FormData
 ): Promise<{ error?: string }> {
-    /* YOUR CODE HERE */
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -73,7 +71,6 @@ export async function toggleTodo(
 }
 
 export async function deleteTodo(formData: FormData) {
-    /* YOUR AUTHORIZATION CHECK HERE */
     const session = await auth.api.getSession({
         headers: await headers()
     });
