@@ -1,4 +1,8 @@
 import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { profiles } from "./profiles";
+import { userSkills } from "./skills";
+import { projectMembers } from "./projects";
 
 export const users = pgTable("users", {
 					id: text('id').primaryKey(),
@@ -50,3 +54,12 @@ export const verifications = pgTable("verifications", {
  createdAt: timestamp('created_at'),
  updatedAt: timestamp('updated_at')
 				});
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+    profile: one(profiles, {
+        fields: [users.id],
+        references: [profiles.userId],
+    }),
+    userSkills: many(userSkills),
+    projectMemberships: many(projectMembers),
+}));
