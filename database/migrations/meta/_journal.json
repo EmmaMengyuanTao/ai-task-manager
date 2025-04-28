@@ -15,6 +15,20 @@
       "when": 1744591916009,
       "tag": "0001_aromatic_selene",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1745853174820,
+      "tag": "0002_big_hairball",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1745853902641,
+      "tag": "0003_whole_warpath",
+      "breakpoints": true
     }
   ]
 }
