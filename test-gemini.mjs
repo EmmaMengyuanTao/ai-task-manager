@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
 dotenv.config(); // Load your GEMINI_API_KEY from .env file
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // 替换为你的 API Key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function test() {
     try {

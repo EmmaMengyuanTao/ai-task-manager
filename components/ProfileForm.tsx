@@ -25,7 +25,6 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // 这里添加提交逻辑
         console.log("Profile data:", formData)
     }
 
