@@ -1,4 +1,3 @@
-// components/ProfileForm.tsx
 "use client"
 
 import { useState } from "react"
@@ -7,12 +6,13 @@ import { Button } from "@/components/ui/button"
 
 interface ProfileFormProps {
     initialData?: {
-        name: string
-        email: string
-        bio: string
-        avatar: string
-        location: string
-        website: string
+        id: string
+        name: string | null
+        email: string | null
+        description: string | null
+        userId: string
+        createdAt: Date | null
+        updatedAt: Date | null
     }
 }
 
@@ -20,7 +20,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
     const [formData, setFormData] = useState({
         name: initialData?.name || "",
         email: initialData?.email || "",
-        description: initialData?.website || ""
+        description: initialData?.description || ""
     })
 
     const handleSubmit = async (e: React.FormEvent) => {
