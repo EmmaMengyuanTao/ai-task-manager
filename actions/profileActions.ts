@@ -13,33 +13,38 @@ interface UpdateProfilePayload {
     userId: string
     name: string | null
     skills: string[] // Array of skill names from the form
+    description: string | null
 }
 
 export async function updateProfileAndSkills(
     payload: UpdateProfilePayload
 ): Promise<{ success: boolean; error?: string }> {
-    const session = await auth.api.getSession({ headers: await headers() }) 
+    const session = await auth.api.getSession({ headers: await headers() })
     if (!session || session.user.id !== payload.userId) {
         console.warn("[Action Warn] Unauthorized attempt to update profile."); // Added log
         return { success: false, error: "Unauthorized." };
     }
 
-    const { userId, name, skills: formSkills } = payload
-    console.log(`[Action] Starting update for userId: ${userId}, name: ${name}, skills: ${formSkills.join(', ')}`); // Enhanced log
+    const { userId, name, skills: formSkills, description } = payload
+    console.log(`[Action] Starting update for userId: ${userId}, name: ${name}, skills: ${formSkills.join(', ')}, description: ${description}`); // Enhanced log
 
     try {
         let profileId: string;
         console.log(`[Action] Looking for existing profile for userId: ${userId}`);
         const existingProfile = await db.query.profiles.findFirst({
             where: eq(profiles.userId, userId),
-            columns: { id: true } 
+            columns: { id: true }
         });
 
         if (existingProfile) {
             profileId = existingProfile.id;
             console.log(`[Action] Found existing profileId: ${profileId}. Updating name to: ${name ?? 'null'}`); // Enhanced log
             await db.update(profiles)
-                .set({ name: name ?? null, updatedAt: new Date() })
+                .set({
+                    name: name ?? null,
+                    description: payload.description ?? null,
+                    updatedAt: new Date()
+                })
                 .where(eq(profiles.id, profileId));
             console.log(`[Action] Profile name updated for profileId: ${profileId}`);
         } else {
@@ -50,6 +55,7 @@ export async function updateProfileAndSkills(
                 id: newProfileId,
                 userId: userId,
                 name: name ?? null,
+                description: description ?? null,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
@@ -110,14 +116,14 @@ export async function updateProfileAndSkills(
                 } else {
                     // Only add if not already marked for creation to avoid duplicates if user enters same new skill twice
                     if (!newSkillsToCreate.some(s => s.name === name)) {
-                         newSkillsToCreate.push({ name });
+                        newSkillsToCreate.push({ name });
                     }
                 }
             }
 
-             // Create brand new skills in the skills table if any
+            // Create brand new skills in the skills table if any
             if (newSkillsToCreate.length > 0) {
-                console.log(`[Action] Creating new skill entries in 'skills' table: ${newSkillsToCreate.map(s=>s.name).join(', ')}`);
+                console.log(`[Action] Creating new skill entries in 'skills' table: ${newSkillsToCreate.map(s => s.name).join(', ')}`);
                 const createdSkills = await db.insert(skillsTable)
                     .values(newSkillsToCreate)
                     .returning({ id: skillsTable.id });
@@ -141,7 +147,7 @@ export async function updateProfileAndSkills(
                             updatedAt: new Date()
                         }))
                     );
-                 }
+                }
             }
         }
 

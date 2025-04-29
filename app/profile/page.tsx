@@ -41,7 +41,8 @@ export default async function ProfilePage() {
     const initialData = {
         profileId: userWithProfileAndSkills.profile?.id ?? null,
         name: userWithProfileAndSkills.profile?.name ?? null,
-        skills: userWithProfileAndSkills.userSkills?.map(us => us.skill.name) ?? []
+        skills: userWithProfileAndSkills.userSkills?.map(us => us.skill.name) ?? [],
+        description: userWithProfileAndSkills.profile?.description ?? null,
     };
 
     return (

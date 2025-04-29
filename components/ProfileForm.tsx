@@ -15,6 +15,7 @@ interface ProfileFormProps {
         profileId: string | null
         name: string | null
         skills: string[]
+        description: string | null
     }
 }
 
@@ -24,6 +25,7 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
     const [skills, setSkills] = useState<string[]>(initialData.skills || [])
     const [newSkill, setNewSkill] = useState("")
     const [isPending, startTransition] = useTransition()
+    const [description, setDecription] = useState(initialData.description || "")
 
     const handleAddSkill = () => {
         const trimmedSkill = newSkill.trim()
@@ -31,8 +33,8 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
             setSkills([...skills, trimmedSkill])
             setNewSkill("")
         } else if (skills.includes(trimmedSkill)) {
-             toast.info(`Skill "${trimmedSkill}" already added.`)
-             setNewSkill("")
+            toast.info(`Skill "${trimmedSkill}" already added.`)
+            setNewSkill("")
         }
     }
 
@@ -48,7 +50,8 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                 const result = await updateProfileAndSkills({
                     userId,
                     name,
-                    skills
+                    skills,
+                    description
                 })
 
                 if (result.success) {
@@ -76,6 +79,19 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your name"
+                    disabled={isPending}
+                />
+            </div>
+
+            <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Profile
+                </label>
+                <Input
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDecription(e.target.value)}
+                    placeholder="Tell us about yourself"
                     disabled={isPending}
                 />
             </div>
