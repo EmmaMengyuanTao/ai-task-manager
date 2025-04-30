@@ -67,9 +67,11 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                 <DialogHeader>
                     <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Project Name</Label>
+                <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+                    <div className="space-y-3">
+                        <Label htmlFor="name" className="text-sm font-medium block mb-1.5">
+                            Project Name
+                        </Label>
                         <Input
                             id="name"
                             name="name"
@@ -78,10 +80,13 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                             placeholder="Enter project name"
                             disabled={isPending}
                             required
+                            className="focus-visible:ring-1 focus-visible:ring-offset-1"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="description">Project Description (Optional)</Label>
+                    <div className="space-y-3">
+                        <Label htmlFor="description" className="text-sm font-medium block mb-1.5">
+                            Project Description (Optional)
+                        </Label>
                         <Textarea
                             id="description"
                             name="description"
@@ -90,9 +95,10 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                             placeholder="Describe the project content and goals"
                             disabled={isPending}
                             rows={4}
+                            className="focus-visible:ring-1 focus-visible:ring-offset-1"
                         />
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-6">
                         <Button type="submit" disabled={isPending}>
                             {isPending ? (
                                 <>
