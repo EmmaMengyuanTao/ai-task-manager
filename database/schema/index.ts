@@ -8,21 +8,22 @@ import { users, sessions, accounts, verifications } from './auth';
 import { profiles } from './profiles';
 import { skills, userSkills } from './skills';
 import { projects, projectMembers, tasks } from './projects';
+import { pgTable, serial, text, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
 
 // --- Define ALL relations --- 
 
 export const usersRelations = relations(users, ({ one, many }) => ({
-    profile: one(profiles, { fields: [users.id], references: [profiles.userId] }),
-    userSkills: many(userSkills),
-    projectMemberships: many(projectMembers), // User is a member of many projects
-    createdProjects: many(projects, { relationName: 'projectCreator' }),
-    assignedTasks: many(tasks),       // Tasks assigned to the user
-    sessions: many(sessions),         // User's sessions
-    accounts: many(accounts),         // User's linked accounts
+  profile: one(profiles, { fields: [users.id], references: [profiles.userId] }),
+  userSkills: many(userSkills),
+  projectMemberships: many(projectMembers), // User is a member of many projects
+  createdProjects: many(projects, { relationName: 'projectCreator' }),
+  assignedTasks: many(tasks),       // Tasks assigned to the user
+  sessions: many(sessions),         // User's sessions
+  accounts: many(accounts),         // User's linked accounts
 }));
 
 export const profilesRelations = relations(profiles, ({ one }) => ({
-    user: one(users, { fields: [profiles.userId], references: [users.id] }),
+  user: one(users, { fields: [profiles.userId], references: [users.id] }),
 }));
 
 export const skillsRelations = relations(skills, ({ many }) => ({
@@ -51,9 +52,17 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
-	user: one(users, { fields: [sessions.userId], references: [users.id] }),
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
-	user: one(users, { fields: [accounts.userId], references: [users.id] }),
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
+
+export const generatedSubtasks = pgTable("generated_subtasks", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  subtasks: jsonb("subtasks").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow()
+});

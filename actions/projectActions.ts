@@ -14,6 +14,76 @@ interface CreateProjectPayload {
     creatorId: string
 }
 
+// Update project name
+interface UpdateProjectNamePayload {
+    projectId: number
+    name: string
+    userId: string
+}
+
+// Update project description
+interface UpdateProjectDescriptionPayload {
+    projectId: number
+    description: string
+    userId: string
+}
+
+export async function updateProjectName({ projectId, name, userId }: UpdateProjectNamePayload) {
+    try {
+        // Verify user has permission to update
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.id, projectId)
+        })
+
+        if (!project) {
+            return { success: false, error: "Project not found" }
+        }
+
+        if (project.creatorId !== userId) {
+            return { success: false, error: "You don't have permission to update this project" }
+        }
+
+        // Update project name
+        await db.update(projects)
+            .set({ name })
+            .where(eq(projects.id, projectId))
+
+        revalidatePath(`/projects/${projectId}`)
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating project name:", error)
+        return { success: false, error: "Failed to update project name" }
+    }
+}
+
+export async function updateProjectDescription({ projectId, description, userId }: UpdateProjectDescriptionPayload) {
+    try {
+        // Verify user has permission to update
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.id, projectId)
+        })
+
+        if (!project) {
+            return { success: false, error: "Project not found" }
+        }
+
+        if (project.creatorId !== userId) {
+            return { success: false, error: "You don't have permission to update this project" }
+        }
+
+        // Update project description
+        await db.update(projects)
+            .set({ description })
+            .where(eq(projects.id, projectId))
+
+        revalidatePath(`/projects/${projectId}`)
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating project description:", error)
+        return { success: false, error: "Failed to update project description" }
+    }
+}
+
 export async function createProject(
     payload: CreateProjectPayload
 ): Promise<{ success: boolean; error?: string }> {
@@ -121,9 +191,9 @@ export async function inviteUserToProject(
         });
 
         revalidatePath(`/projects/${projectId}`);
-        return { 
+        return {
             success: true,
-            message: "User has been successfully added to the project" 
+            message: "User has been successfully added to the project"
         };
     } catch (error) {
         console.error("Failed to invite user:", error);
@@ -172,4 +242,4 @@ export async function deleteProject(
         console.error("Failed to delete project:", error);
         return { success: false, error: "An error occurred while deleting the project" };
     }
-} 
+}

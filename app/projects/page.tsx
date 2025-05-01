@@ -6,6 +6,7 @@ import { projects, projectMembers } from "@/database/schema"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CreateProjectForm } from "@/components/CreateProjectForm"
+import { ProjectCard } from "@/components/ProjectCard"
 
 export default async function ProjectsPage() {
     const session = await auth.api.getSession({
@@ -45,13 +46,13 @@ export default async function ProjectsPage() {
 
     // Combine all projects with role information
     const allProjects = [
-        ...createdProjects.map(p => ({ 
-            ...p, 
-            role: "Creator" 
+        ...createdProjects.map(p => ({
+            ...p,
+            role: "Creator"
         })),
-        ...uniqueMemberProjects.map(p => ({ 
-            ...p, 
-            role: "Member" 
+        ...uniqueMemberProjects.map(p => ({
+            ...p,
+            role: "Member"
         }))
     ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
@@ -65,12 +66,13 @@ export default async function ProjectsPage() {
             {allProjects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {allProjects.map(project => (
-                        <ProjectCard 
+                        <ProjectCard
                             key={project.id}
                             id={project.id}
                             name={project.name}
                             description={project.description || "No description"}
                             role={project.role}
+                            userId={session.user.id}
                         />
                     ))}
                 </div>
@@ -80,29 +82,5 @@ export default async function ProjectsPage() {
                 </div>
             )}
         </main>
-    )
-}
-
-function ProjectCard({ id, name, description, role }: { 
-    id: number, 
-    name: string, 
-    description: string,
-    role: string 
-}) {
-    return (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow">
-            <div className="p-6">
-                <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-semibold">{name}</h3>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">{role}</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{description}</p>
-                <div className="flex justify-end">
-                    <Link href={`/projects/${id}`}>
-                        <Button variant="outline" size="sm">Open</Button>
-                    </Link>
-                </div>
-            </div>
-        </div>
     )
 } 
