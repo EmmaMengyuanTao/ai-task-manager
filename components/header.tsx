@@ -3,21 +3,12 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Button } from "./ui/button"
 import { AdminNavEntry } from "./AdminNavEntry"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { db } from "@/database/db"
 import { eq } from "drizzle-orm"
 import { users } from "@/database/schema"
 import { getAvatarUrl } from "@/lib/avatars"
 import { UserButton as AuthUserButton } from "@daveyplate/better-auth-ui"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { UserRound, LogOut } from "lucide-react"
+import { UserAccountNav } from "./user-account-nav"
 
 export async function Header() {
     const session = await auth.api.getSession({
@@ -64,37 +55,13 @@ export async function Header() {
                 </div>
 
                 {session ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <div className="flex items-center gap-2 cursor-pointer">
-                                <span className="text-sm font-medium hidden sm:inline-block">
-                                    {userName}
-                                </span>
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={avatarUrl || ""} alt="User avatar" />
-                                    <AvatarFallback>
-                                        {userName ? userName.charAt(0).toUpperCase() : 'U'}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel className="break-all">{userEmail}</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <Link href="/profile">
-                                <DropdownMenuItem className="cursor-pointer">
-                                    <UserRound className="mr-2 h-4 w-4" />
-                                    <span>Profile</span>
-                                </DropdownMenuItem>
-                            </Link>
-                            <Link href="/auth/sign-out">
-                                <DropdownMenuItem className="cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Sign out</span>
-                                </DropdownMenuItem>
-                            </Link>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <UserAccountNav 
+                        user={{
+                            name: userName,
+                            email: userEmail,
+                            avatarUrl: avatarUrl
+                        }}
+                    />
                 ) : (
                     <AuthUserButton />
                 )}
