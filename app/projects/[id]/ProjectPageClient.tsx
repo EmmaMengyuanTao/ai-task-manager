@@ -32,6 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { ProjectMembersSection } from "@/components/ProjectMembersSection"
 
 export interface Subtask {
     title: string
@@ -55,6 +56,10 @@ interface ProjectPageClientProps {
         userName: string | null
         userEmail: string
         userImage: string | null
+        profile?: {
+            name: string | null
+            avatarId: string | null
+        } | null
         role: string | null
         joinedAt: Date
     }[]
@@ -618,47 +623,11 @@ export function ProjectPageClient({
                 )}
 
                 {activeSection === "members" && (
-                    <div className="rounded-lg border bg-card">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Project Members</h2>
-                                {canInvite && (
-                                    <InviteUserForm projectId={projectId} />
-                                )}
-                            </div>
-                            <div className="grid gap-4">
-                                {members.map(member => (
-                                    <div
-                                        key={member.userId}
-                                        className="flex items-center justify-between p-3 rounded-md border"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            {member.userImage ? (
-                                                <img
-                                                    src={member.userImage}
-                                                    alt={member.userName || ""}
-                                                    className="w-10 h-10 rounded-full"
-                                                />
-                                            ) : (
-                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    {member.userName?.[0] || member.userEmail[0]}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <p className="font-medium">{member.userName}</p>
-                                                <p className="text-sm text-muted-foreground">{member.userEmail}</p>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <span className="px-2 py-1 text-xs rounded-full bg-primary/10">
-                                                {member.role}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                    <ProjectMembersSection 
+                        projectId={projectId}
+                        canInvite={canInvite}
+                        members={members}
+                    />
                 )}
             </main>
         </div>

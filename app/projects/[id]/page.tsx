@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/database/db"
-import { eq, and } from "drizzle-orm"
-import { projects, projectMembers, users, generatedSubtasks } from "@/database/schema"
+import { eq, and} from "drizzle-orm"
+import { projects, projectMembers, users, generatedSubtasks, profiles } from "@/database/schema"
 import { notFound } from "next/navigation"
 import { ProjectPageClient } from "./ProjectPageClient"
 
@@ -74,10 +74,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             userEmail: users.email,
             userImage: users.image,
             role: projectMembers.role,
-            joinedAt: projectMembers.joinedAt
+            joinedAt: projectMembers.joinedAt,
+            profile: {
+                name: profiles.name,
+                avatarId: profiles.avatarId
+            }
         })
         .from(projectMembers)
         .innerJoin(users, eq(projectMembers.userId, users.id))
+        .leftJoin(profiles, eq(users.id, profiles.userId))
         .where(eq(projectMembers.projectId, projectId))
 
     // Get latest generated subtasks
