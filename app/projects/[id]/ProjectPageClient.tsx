@@ -8,7 +8,14 @@ import { DeleteProjectButton } from "@/components/DeleteProjectButton"
 import { ProjectSidebar } from "@/components/ProjectSidebar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Pencil, Save, X, Trash2 } from "lucide-react"
+import { Pencil, Save, X, Trash2, UserPlus, UserMinus } from "lucide-react"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface Subtask {
     title: string
@@ -57,6 +64,7 @@ export function ProjectPageClient({
         name: project.name,
         description: project.description || ""
     })
+    const [selectedMember, setSelectedMember] = useState<string>("")
 
     const handleGenerateSubtasks = async () => {
         setIsLoading(true)
@@ -165,6 +173,31 @@ export function ProjectPageClient({
         } catch (error) {
             console.error('Error deleting subtask:', error)
             toast.error('Failed to delete subtask')
+        }
+    }
+
+    const handleAddMember = () => {
+        if (selectedMember && editedSubtask) {
+            if (!editedSubtask.assignedMembers.includes(selectedMember)) {
+                setEditedSubtask({
+                    ...editedSubtask,
+                    assignedMembers: [...editedSubtask.assignedMembers, selectedMember]
+                })
+                setSelectedMember("")
+                toast.success('Member added successfully!')
+            } else {
+                toast.error('Member already assigned!')
+            }
+        }
+    }
+
+    const handleRemoveMember = (member: string) => {
+        if (editedSubtask) {
+            setEditedSubtask({
+                ...editedSubtask,
+                assignedMembers: editedSubtask.assignedMembers.filter(m => m !== member)
+            })
+            toast.success('Member removed successfully!')
         }
     }
 
@@ -294,6 +327,54 @@ export function ProjectPageClient({
                                                             placeholder="Task description"
                                                             className="min-h-[100px]"
                                                         />
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <Select
+                                                                    value={selectedMember}
+                                                                    onValueChange={setSelectedMember}
+                                                                >
+                                                                    <SelectTrigger className="w-[180px]">
+                                                                        <SelectValue placeholder="Select a member" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {members.map(member => (
+                                                                            <SelectItem
+                                                                                key={member.userId}
+                                                                                value={member.userName || member.userEmail}
+                                                                            >
+                                                                                {member.userName || member.userEmail}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={handleAddMember}
+                                                                    disabled={!selectedMember}
+                                                                >
+                                                                    <UserPlus className="h-4 w-4 mr-2" />
+                                                                    Add
+                                                                </Button>
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {editedSubtask?.assignedMembers.map((member) => (
+                                                                    <div
+                                                                        key={member}
+                                                                        className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-secondary/10"
+                                                                    >
+                                                                        {member}
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            className="h-4 w-4 p-0"
+                                                                            onClick={() => handleRemoveMember(member)}
+                                                                        >
+                                                                            <UserMinus className="h-3 w-3" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
                                                         <Textarea
                                                             value={editedSubtask?.reasoning || ""}
                                                             onChange={(e) => handleChange("reasoning", e.target.value)}
