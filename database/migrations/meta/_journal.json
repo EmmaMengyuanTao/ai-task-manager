@@ -1,33 +1,12 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
+  "version": "0.0.1",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
       "version": "7",
-      "when": 1744511393625,
-      "tag": "0000_young_warpath",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1744591916009,
-      "tag": "0001_aromatic_selene",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1745853174820,
-      "tag": "0002_big_hairball",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1745853902641,
-      "tag": "0003_whole_warpath",
+      "when": 1746075712895,
+      "tag": "0000_hesitant_valeria_richards",
       "breakpoints": true
     }
   ]

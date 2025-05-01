@@ -2,10 +2,9 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/database/db"
 import { eq, and } from "drizzle-orm"
-import { projects, projectMembers, users } from "@/database/schema"
-import { InviteUserForm } from "@/components/InviteUserForm"
-import { DeleteProjectButton } from "@/components/DeleteProjectButton"
+import { projects, projectMembers, users, generatedSubtasks } from "@/database/schema"
 import { notFound } from "next/navigation"
+import { ProjectPageClient } from "./ProjectPageClient"
 
 interface ProjectPageProps {
     params: {
@@ -81,70 +80,36 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         .innerJoin(users, eq(projectMembers.userId, users.id))
         .where(eq(projectMembers.projectId, projectId))
 
+    // Get latest generated subtasks
+    const latestSubtasks = await db.query.generatedSubtasks.findMany({
+        where: eq(generatedSubtasks.projectId, projectId),
+        orderBy: (generatedSubtasks, { desc }) => [desc(generatedSubtasks.createdAt)],
+        limit: 1
+    })
+
+    const initialSubtasks = latestSubtasks.length > 0 ? (latestSubtasks[0].subtasks as {
+        title: string;
+        description: string;
+        requiredSkills: string[];
+        assignedMembers: string[];
+        reasoning: string;
+    }[]) : []
+
     // Check if current user has permission to invite
     const isCreator = project.creatorId === session.user.id
-    const isAdmin = members.some(m => 
+    const isAdmin = members.some(m =>
         m.userId === session.user.id && (m.role === "admin" || m.role === "creator")
     )
     const canInvite = isCreator || isAdmin
 
     return (
-        <main className="py-8 px-10 container max-w-6xl mx-auto">
-            <div className="mb-8">
-                <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">{project.name}</h1>
-                    <div className="flex items-center gap-2">
-                        <DeleteProjectButton 
-                            projectId={projectId} 
-                            creatorId={project.creatorId}
-                            userId={session.user.id}
-                        />
-                        {canInvite && (
-                            <InviteUserForm projectId={projectId} />
-                        )}
-                    </div>
-                </div>
-                {project.description && (
-                    <p className="text-muted-foreground mb-4">{project.description}</p>
-                )}
-            </div>
-
-            <div className="rounded-lg border bg-card">
-                <div className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Project Members</h2>
-                    <div className="grid gap-4">
-                        {members.map(member => (
-                            <div 
-                                key={member.userId}
-                                className="flex items-center justify-between p-3 rounded-md border"
-                            >
-                                <div className="flex items-center gap-3">
-                                    {member.userImage ? (
-                                        <img 
-                                            src={member.userImage} 
-                                            alt={member.userName || ""} 
-                                            className="w-10 h-10 rounded-full"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                            {member.userName?.[0] || member.userEmail[0]}
-                                        </div>
-                                    )}
-                                    <div>
-                                        <p className="font-medium">{member.userName}</p>
-                                        <p className="text-sm text-muted-foreground">{member.userEmail}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span className="px-2 py-1 text-xs rounded-full bg-primary/10">
-                                        {member.role}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </main>
+        <ProjectPageClient
+            project={project}
+            projectId={projectId}
+            members={members}
+            canInvite={canInvite}
+            userId={session.user.id}
+            initialSubtasks={initialSubtasks}
+        />
     )
 } 
