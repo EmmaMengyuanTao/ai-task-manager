@@ -10,6 +10,22 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Pencil, Save, X, Trash2, UserPlus, UserMinus } from "lucide-react"
 import {
+    DndContext,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core"
+import {
+    SortableContext,
+    arrayMove,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { SortableItem } from "@/components/SortableItem"
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -17,12 +33,13 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-interface Subtask {
+export interface Subtask {
     title: string
     description: string
     requiredSkills: string[]
     assignedMembers: string[]
     reasoning: string
+    status: "todo" | "inprogress" | "completed"
 }
 
 interface ProjectPageClientProps {
@@ -55,7 +72,12 @@ export function ProjectPageClient({
     initialSubtasks
 }: ProjectPageClientProps) {
     const [isLoading, setIsLoading] = useState(false)
-    const [subtasks, setSubtasks] = useState<Subtask[]>(initialSubtasks)
+    const [subtasks, setSubtasks] = useState<Subtask[]>(
+        initialSubtasks.map(subtask => ({
+            ...subtask,
+            status: "todo" as const
+        }))
+    )
     const [activeSection, setActiveSection] = useState("subtasks")
     const [editingIndex, setEditingIndex] = useState<number | null>(null)
     const [editedSubtask, setEditedSubtask] = useState<Subtask | null>(null)
@@ -65,6 +87,21 @@ export function ProjectPageClient({
         description: project.description || ""
     })
     const [selectedMember, setSelectedMember] = useState<string>("")
+    const [activeId, setActiveId] = useState<string | null>(null)
+
+    const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 300,
+                tolerance: 5,
+            },
+        })
+    )
 
     const handleGenerateSubtasks = async () => {
         setIsLoading(true)
@@ -87,7 +124,13 @@ export function ProjectPageClient({
                 throw new Error('Invalid response format from AI')
             }
 
-            setSubtasks(data.subtasks)
+            // Add status field to each subtask and set all to "todo"
+            const subtasksWithStatus = data.subtasks.map((subtask: Subtask) => ({
+                ...subtask,
+                status: "todo" as const
+            }))
+
+            setSubtasks(subtasksWithStatus)
             toast.success('Subtasks generated successfully!')
         } catch (error) {
             console.error('Error generating subtasks:', error)
@@ -201,6 +244,49 @@ export function ProjectPageClient({
         }
     }
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string)
+    }
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        setActiveId(null)
+        const { active, over } = event
+        if (!over) return
+
+        const activeId = active.id as string
+        const overId = over.id as string
+
+        // Extract status from the IDs
+        const [activeStatus] = activeId.split("-")
+        const [overStatus] = overId.split("-")
+        const activeIndex = parseInt(activeId.split("-")[1])
+
+        // If dropped in the same column, keep the same order
+        if (activeStatus === overStatus) {
+            return
+        }
+
+        // Move to the new column
+        const sourceSubtasks = subtasks.filter(subtask => subtask.status === activeStatus)
+        const destSubtasks = subtasks.filter(subtask => subtask.status === overStatus)
+
+        const [movedSubtask] = sourceSubtasks.splice(activeIndex, 1)
+        movedSubtask.status = overStatus as "todo" | "inprogress" | "completed"
+        destSubtasks.push(movedSubtask) // Always append to the end
+
+        const newSubtasks = subtasks.map(subtask => {
+            if (subtask.status === activeStatus) {
+                return sourceSubtasks.shift() || subtask
+            }
+            if (subtask.status === overStatus) {
+                return destSubtasks.shift() || subtask
+            }
+            return subtask
+        })
+
+        setSubtasks(newSubtasks)
+    }
+
     return (
         <div className="flex h-[calc(100vh-4rem)]">
             <ProjectSidebar
@@ -287,7 +373,9 @@ export function ProjectPageClient({
                                 <div className="p-6">
                                     <div className="flex justify-between items-center mb-4">
                                         <h2 className="text-xl font-semibold">Generated Subtasks</h2>
-                                        <p className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleString()}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Last updated: {new Date().toISOString().split('T')[0]} {new Date().toTimeString().split(' ')[0]}
+                                        </p>
                                     </div>
                                     <div className="grid gap-4">
                                         {subtasks.map((subtask, index) => (
@@ -440,7 +528,91 @@ export function ProjectPageClient({
                     <div className="rounded-lg border bg-card">
                         <div className="p-6">
                             <h2 className="text-xl font-semibold mb-4">Todo List</h2>
-                            <p className="text-muted-foreground">Todo list coming soon...</p>
+                            <DndContext
+                                sensors={sensors}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-4 p-4 rounded-lg bg-background">
+                                        <h3 className="text-lg font-medium">To Do</h3>
+                                        <div className="space-y-2 min-h-[100px]">
+                                            <SortableContext
+                                                items={subtasks
+                                                    .filter(subtask => subtask.status === "todo")
+                                                    .map((_, index) => `todo-${index}`)}
+                                                strategy={verticalListSortingStrategy}
+                                            >
+                                                {subtasks
+                                                    .filter(subtask => subtask.status === "todo")
+                                                    .map((subtask, index) => (
+                                                        <SortableItem
+                                                            key={`todo-${index}`}
+                                                            id={`todo-${index}`}
+                                                            subtask={subtask}
+                                                        />
+                                                    ))}
+                                            </SortableContext>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 p-4 rounded-lg bg-background">
+                                        <h3 className="text-lg font-medium">In Progress</h3>
+                                        <div className="space-y-2 min-h-[100px]">
+                                            <SortableContext
+                                                items={subtasks
+                                                    .filter(subtask => subtask.status === "inprogress")
+                                                    .map((_, index) => `inprogress-${index}`)}
+                                                strategy={verticalListSortingStrategy}
+                                            >
+                                                {subtasks
+                                                    .filter(subtask => subtask.status === "inprogress")
+                                                    .map((subtask, index) => (
+                                                        <SortableItem
+                                                            key={`inprogress-${index}`}
+                                                            id={`inprogress-${index}`}
+                                                            subtask={subtask}
+                                                        />
+                                                    ))}
+                                            </SortableContext>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 p-4 rounded-lg bg-background">
+                                        <h3 className="text-lg font-medium">Completed</h3>
+                                        <div className="space-y-2 min-h-[100px]">
+                                            <SortableContext
+                                                items={subtasks
+                                                    .filter(subtask => subtask.status === "completed")
+                                                    .map((_, index) => `completed-${index}`)}
+                                                strategy={verticalListSortingStrategy}
+                                            >
+                                                {subtasks
+                                                    .filter(subtask => subtask.status === "completed")
+                                                    .map((subtask, index) => (
+                                                        <SortableItem
+                                                            key={`completed-${index}`}
+                                                            id={`completed-${index}`}
+                                                            subtask={subtask}
+                                                        />
+                                                    ))}
+                                            </SortableContext>
+                                        </div>
+                                    </div>
+                                </div>
+                                <DragOverlay>
+                                    {activeId ? (
+                                        <div className="p-4 rounded-md border bg-white shadow-lg">
+                                            <h4 className="font-medium">
+                                                {subtasks.find(subtask =>
+                                                    subtask.status === activeId.split("-")[0] &&
+                                                    subtask === subtasks[parseInt(activeId.split("-")[1])]
+                                                )?.title}
+                                            </h4>
+                                        </div>
+                                    ) : null}
+                                </DragOverlay>
+                            </DndContext>
                         </div>
                     </div>
                 )}
