@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/database/db"
 import { eq, or } from "drizzle-orm"
-import { projects, projectMembers } from "@/database/schema"
+import { projects, projectMembers, users, profiles } from "@/database/schema"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CreateProjectForm } from "@/components/CreateProjectForm"
@@ -21,28 +21,78 @@ export default async function ProjectsPage() {
         )
     }
 
-    // Get projects created by user
-    const createdProjects = await db.query.projects.findMany({
-        where: eq(projects.creatorId, session.user.id),
-        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
-    })
+    // Get projects created by user with members info
+    const createdProjects = await Promise.all(
+        (await db.query.projects.findMany({
+            where: eq(projects.creatorId, session.user.id),
+            orderBy: (projects, { desc }) => [desc(projects.createdAt)],
+        })).map(async (project) => {
+            // Get members info for each project
+            const members = await db
+                .select({
+                    userId: users.id,
+                    userName: users.name,
+                    userEmail: users.email,
+                    userImage: users.image,
+                    profile: {
+                        name: profiles.name,
+                        avatarId: profiles.avatarId
+                    }
+                })
+                .from(projectMembers)
+                .innerJoin(users, eq(projectMembers.userId, users.id))
+                .leftJoin(profiles, eq(users.id, profiles.userId))
+                .where(eq(projectMembers.projectId, project.id))
+                .limit(4) // Limit display member count
+            
+            return {
+                ...project,
+                members
+            }
+        })
+    )
 
     // Get projects user is a member of
-    const memberProjects = await db
-        .select({
-            id: projects.id,
-            name: projects.name,
-            description: projects.description,
-            createdAt: projects.createdAt,
-            deadline: projects.deadline
-        })
+    const memberProjectIds = await db
+        .select({ projectId: projectMembers.projectId })
         .from(projectMembers)
-        .innerJoin(projects, eq(projectMembers.projectId, projects.id))
         .where(eq(projectMembers.userId, session.user.id))
+    
+    const memberProjectsData = await Promise.all(
+        memberProjectIds.map(async ({ projectId }) => {
+            const project = await db.query.projects.findFirst({
+                where: eq(projects.id, projectId),
+            })
+            
+            if (!project) return null
 
-    // Remove duplicate projects
-    const createdProjectIds = new Set(createdProjects.map(p => p.id))
-    const uniqueMemberProjects = memberProjects.filter(p => !createdProjectIds.has(p.id))
+            // 获取每个项目的成员信息
+            const members = await db
+                .select({
+                    userId: users.id,
+                    userName: users.name,
+                    userEmail: users.email,
+                    userImage: users.image,
+                    profile: {
+                        name: profiles.name,
+                        avatarId: profiles.avatarId
+                    }
+                })
+                .from(projectMembers)
+                .innerJoin(users, eq(projectMembers.userId, users.id))
+                .leftJoin(profiles, eq(users.id, profiles.userId))
+                .where(eq(projectMembers.projectId, projectId))
+                .limit(5)
+            
+            return project ? {
+                ...project,
+                members
+            } : null
+        })
+    )
+
+    // Filter out null values and remove duplicate projects
+    const memberProjects = memberProjectsData.filter(p => p !== null && p.creatorId !== session.user.id) as typeof createdProjects
 
     // Combine all projects with role information
     const allProjects = [
@@ -50,7 +100,7 @@ export default async function ProjectsPage() {
             ...p,
             role: "Creator"
         })),
-        ...uniqueMemberProjects.map(p => ({
+        ...memberProjects.map(p => ({
             ...p,
             role: "Member"
         }))
@@ -73,6 +123,7 @@ export default async function ProjectsPage() {
                             description={project.description || "No description"}
                             role={project.role}
                             userId={session.user.id}
+                            members={project.members}
                         />
                     ))}
                 </div>

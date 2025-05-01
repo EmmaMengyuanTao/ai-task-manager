@@ -8,6 +8,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { updateProjectDescription } from "@/actions/projectActions"
 import { toast } from "sonner"
 import { Pencil, Save, Loader2 } from "lucide-react"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { getAvatarUrl } from "@/lib/avatars"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface ProjectCardProps {
     id: number
@@ -15,9 +23,19 @@ interface ProjectCardProps {
     description: string
     role: string
     userId: string
+    members?: {
+        userId: string
+        userName: string | null
+        userEmail: string
+        userImage: string | null
+        profile?: {
+            name: string | null
+            avatarId: string | null
+        } | null
+    }[]
 }
 
-export function ProjectCard({ id, name, description, role, userId }: ProjectCardProps) {
+export function ProjectCard({ id, name, description, role, userId, members = [] }: ProjectCardProps) {
     const router = useRouter()
     const [isEditing, setIsEditing] = useState(false)
     const [editedDescription, setEditedDescription] = useState(description)
@@ -63,7 +81,7 @@ export function ProjectCard({ id, name, description, role, userId }: ProjectCard
                                 className="min-h-[80px]"
                                 disabled={isPending}
                             />
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end space-x-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -108,7 +126,50 @@ export function ProjectCard({ id, name, description, role, userId }: ProjectCard
                         </div>
                     )}
                 </div>
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between mt-4">
+                    <div className="flex -space-x-2 overflow-hidden">
+                        <TooltipProvider>
+                            {members.slice(0, 4).map((member) => {
+                                const displayName = member.profile?.name || member.userName || member.userEmail.split('@')[0]
+                                const avatarId = member.profile?.avatarId || member.userImage
+                                const avatarUrl = avatarId ? getAvatarUrl(avatarId) : null
+
+                                return (
+                                    <Tooltip key={member.userId}>
+                                        <TooltipTrigger asChild>
+                                            <Avatar 
+                                                className="w-8 h-8 border-2 border-background hover:translate-y-[-5px] transition-transform"
+                                            >
+                                                <AvatarImage src={avatarUrl || ""} alt={displayName} />
+                                                <AvatarFallback className="text-xs bg-primary/10">
+                                                    {displayName[0]?.toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{displayName}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )
+                            })}
+                            {members.length > 4 && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Avatar 
+                                            className="w-8 h-8 border-2 border-background"
+                                        >
+                                            <AvatarFallback className="bg-primary/10 text-xs">
+                                                +{members.length - 4}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{members.length - 4} more members</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
+                        </TooltipProvider>
+                    </div>
                     <Link href={`/projects/${id}`}>
                         <Button variant="outline" size="sm">Open</Button>
                     </Link>
