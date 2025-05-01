@@ -121,9 +121,9 @@ export async function inviteUserToProject(
         });
 
         revalidatePath(`/projects/${projectId}`);
-        return { 
+        return {
             success: true,
-            message: "User has been successfully added to the project" 
+            message: "User has been successfully added to the project"
         };
     } catch (error) {
         console.error("Failed to invite user:", error);
@@ -172,4 +172,51 @@ export async function deleteProject(
         console.error("Failed to delete project:", error);
         return { success: false, error: "An error occurred while deleting the project" };
     }
-} 
+}
+
+// Update project description
+interface UpdateProjectDescriptionPayload {
+    projectId: number
+    description: string
+    userId: string
+}
+
+export async function updateProjectDescription(
+    payload: UpdateProjectDescriptionPayload
+): Promise<{ success: boolean; error?: string }> {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session || session.user.id !== payload.userId) {
+        return { success: false, error: "Unauthorized operation" };
+    }
+
+    const { projectId, description, userId } = payload
+
+    try {
+        // Check if the user is a project member
+        const member = await db.query.projectMembers.findFirst({
+            where: and(
+                eq(projectMembers.projectId, projectId),
+                eq(projectMembers.userId, userId)
+            )
+        });
+
+        if (!member) {
+            return { success: false, error: "You don't have permission to edit this project" };
+        }
+
+        // Update project description
+        await db.update(projects)
+            .set({
+                description,
+                updatedAt: new Date()
+            })
+            .where(eq(projects.id, projectId));
+
+        revalidatePath("/projects");
+        revalidatePath(`/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update project description:", error);
+        return { success: false, error: "An error occurred while updating the project description" };
+    }
+}
