@@ -1,13 +1,17 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import React, { useState, useTransition } from "react"
 import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
+import { X, Pencil } from "lucide-react"
 import { updateProfileAndSkills } from "@/actions/profileActions"
 import { toast } from "sonner"
+import { AvatarSelector } from './avatar-selector';
+import { type AvatarId, getAvatarUrl } from '@/lib/avatars';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 
 interface ProfileFormProps {
     userId: string
@@ -16,6 +20,7 @@ interface ProfileFormProps {
         name: string | null
         skills: string[]
         description: string | null
+        avatarId: AvatarId | null
     }
 }
 
@@ -26,6 +31,8 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
     const [newSkill, setNewSkill] = useState("")
     const [isPending, startTransition] = useTransition()
     const [description, setDecription] = useState(initialData.description || "")
+    const [avatarId, setAvatarId] = useState<AvatarId | null>(initialData.avatarId || "default")
+    const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
 
     const handleAddSkill = () => {
         const trimmedSkill = newSkill.trim()
@@ -42,6 +49,11 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
         setSkills(skills.filter((skill) => skill !== skillToRemove))
     }
 
+    const handleAvatarSelect = (id: AvatarId) => {
+        setAvatarId(id)
+        setIsAvatarDialogOpen(false)
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -51,7 +63,8 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                     userId,
                     name,
                     skills,
-                    description
+                    description,
+                    avatarId
                 })
 
                 if (result.success) {
@@ -70,6 +83,39 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
     return (
         <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 rounded-lg border bg-card text-card-foreground p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-center">Edit Profile</h2>
+            
+            <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="relative">
+                    <Avatar className="w-20 h-20">
+                        <AvatarImage 
+                            src={getAvatarUrl(avatarId || "default")} 
+                            alt="Profile avatar" 
+                        />
+                        <AvatarFallback>
+                            {name ? name.charAt(0).toUpperCase() : 'U'}
+                        </AvatarFallback>
+                    </Avatar>
+                    <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button 
+                                size="icon" 
+                                className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full" 
+                                variant="secondary"
+                            >
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogTitle className="text-lg font-semibold">Select Avatar</DialogTitle>
+                            <AvatarSelector 
+                                currentAvatarId={avatarId} 
+                                onSelect={handleAvatarSelect} 
+                            />
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </div>
+
             <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Name

@@ -1,12 +1,19 @@
 {
-  "version": "0.0.1",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
       "version": "7",
-      "when": 1746075712895,
-      "tag": "0000_hesitant_valeria_richards",
+      "when": 1746121002530,
+      "tag": "0000_whole_wendell_rand",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1746136073803,
+      "tag": "0001_old_groot",
       "breakpoints": true
     }
   ]

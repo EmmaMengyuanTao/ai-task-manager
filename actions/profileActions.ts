@@ -8,12 +8,14 @@ import { revalidatePath } from "next/cache" // To refresh data on the profile pa
 import { auth } from "@/lib/auth"
 import crypto from 'crypto'; // Ensure crypto is imported
 import { headers } from 'next/headers'; // Import headers
+import { isValidAvatarId, type AvatarId } from "@/lib/avatars"
 
 interface UpdateProfilePayload {
     userId: string
     name: string | null
     skills: string[] // Array of skill names from the form
     description: string | null
+    avatarId: AvatarId | null
 }
 
 export async function updateProfileAndSkills(
@@ -25,10 +27,29 @@ export async function updateProfileAndSkills(
         return { success: false, error: "Unauthorized." };
     }
 
-    const { userId, name, skills: formSkills, description } = payload
-    console.log(`[Action] Starting update for userId: ${userId}, name: ${name}, skills: ${formSkills.join(', ')}, description: ${description}`); // Enhanced log
+    const { userId, name, skills: formSkills, description, avatarId } = payload
+    console.log(`[Action] Starting update for userId: ${userId}, name: ${name}, skills: ${formSkills.join(', ')}, description: ${description}, avatarId: ${avatarId}`);
 
     try {
+        // Update the user's avatar if it's provided
+        if (avatarId !== undefined) {
+            if (avatarId !== null && !isValidAvatarId(avatarId)) {
+                console.warn(`[Action Warn] Invalid avatarId received for userId: ${userId}: ${avatarId}`);
+                return { success: false, error: "Invalid avatar selected." };
+            }
+            
+            // Update user's avatar in the users table
+            await db
+                .update(users)
+                .set({
+                    image: avatarId,
+                    updatedAt: new Date()
+                })
+                .where(eq(users.id, userId));
+            
+            console.log(`[Action] Avatar updated successfully for userId: ${userId} to ${avatarId}`);
+        }
+
         let profileId: string;
         console.log(`[Action] Looking for existing profile for userId: ${userId}`);
         const existingProfile = await db.query.profiles.findFirst({
@@ -38,34 +59,33 @@ export async function updateProfileAndSkills(
 
         if (existingProfile) {
             profileId = existingProfile.id;
-            console.log(`[Action] Found existing profileId: ${profileId}. Updating name to: ${name ?? 'null'}`); // Enhanced log
+            console.log(`[Action] Found existing profileId: ${profileId}. Updating profile`);
             await db.update(profiles)
                 .set({
                     name: name ?? null,
-                    description: payload.description ?? null,
+                    description: description ?? null,
+                    avatarId: avatarId,
                     updatedAt: new Date()
                 })
                 .where(eq(profiles.id, profileId));
-            console.log(`[Action] Profile name updated for profileId: ${profileId}`);
+            console.log(`[Action] Profile updated for profileId: ${profileId}`);
         } else {
             const newProfileId = crypto.randomUUID();
             profileId = newProfileId;
-            console.log(`[Action] No existing profile. Attempting to create new profile with id: ${newProfileId} for userId: ${userId}, name: ${name ?? 'null'}`); // Enhanced log
+            console.log(`[Action] No existing profile. Creating new profile with id: ${newProfileId}`);
             await db.insert(profiles).values({
                 id: newProfileId,
                 userId: userId,
                 name: name ?? null,
                 description: description ?? null,
+                avatarId: avatarId,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
-            // Check if insert really worked (optional, might require fetching back)
-            // const checkInsert = await db.query.profiles.findFirst({ where: eq(profiles.id, newProfileId), columns: { id: true } });
-            // console.log(`[Action] Verification fetch after insert for ${newProfileId}: ${checkInsert ? 'Found' : 'NOT FOUND'}`);
-            console.log(`[Action] Assumed successful insert for new profile with id: ${newProfileId}`); // Modified log slightly
+            console.log(`[Action] Created new profile with id: ${newProfileId}`);
         }
 
-        console.log(`[Action] Proceeding to handle skills for userId: ${userId} and profileId: ${profileId}`); // Added profileId here
+        console.log(`[Action] Proceeding to handle skills for profileId: ${profileId}`);
         // --- Handle Skills (Add detailed logs here too if needed) ---
         // Get current user skills from DB (skill IDs and names)
         const currentUserSkills = await db.query.userSkills.findMany({
@@ -151,7 +171,7 @@ export async function updateProfileAndSkills(
             }
         }
 
-        console.log(`[Action] Skill handling complete for userId: ${userId}.`); // Added userId
+        console.log(`[Action] Profile and skill update complete for userId: ${userId}`);
 
         console.log(`[Action] Revalidating path /profile`);
         revalidatePath("/profile");
@@ -159,7 +179,7 @@ export async function updateProfileAndSkills(
         return { success: true };
 
     } catch (error) {
-        console.error(`[Action Error] Error during profile/skill update for userId: ${payload.userId}:`, error); // Enhanced log
+        console.error(`[Action Error] Error during profile/skill update for userId: ${payload.userId}:`, error);
         return { success: false, error: "Database operation failed during profile update." };
     }
 }

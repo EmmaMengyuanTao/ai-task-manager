@@ -7,6 +7,7 @@ export const profiles = pgTable("profiles", {
     name: text("name"),
     email: text("email"),
     description: text("description"),
+    avatarId: text("avatar_id"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
 })

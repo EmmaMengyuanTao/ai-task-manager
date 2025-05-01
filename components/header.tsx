@@ -1,9 +1,49 @@
 import Link from "next/link"
-import { UserButton } from "@daveyplate/better-auth-ui"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 import { Button } from "./ui/button"
 import { AdminNavEntry } from "./AdminNavEntry"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { db } from "@/database/db"
+import { eq } from "drizzle-orm"
+import { users } from "@/database/schema"
+import { getAvatarUrl } from "@/lib/avatars"
+import { UserButton as AuthUserButton } from "@daveyplate/better-auth-ui"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { UserRound, LogOut } from "lucide-react"
 
 export async function Header() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    let avatarUrl = null
+    let userName = null
+    let userEmail = null
+
+    if (session?.user?.id) {
+        const userWithProfile = await db.query.users.findFirst({
+            where: eq(users.id, session.user.id),
+            with: {
+                profile: true
+            }
+        })
+
+        const avatarId = userWithProfile?.profile?.avatarId || userWithProfile?.image
+        if (avatarId) {
+            avatarUrl = getAvatarUrl(avatarId)
+        }
+        
+        userName = userWithProfile?.profile?.name || userWithProfile?.name || session.user.email?.split('@')[0]
+        userEmail = session.user.email
+    }
 
     return (
         <header className="sticky top-0 z-50 px-4 py-3 border-b bg-background/60 backdrop-blur">
@@ -23,7 +63,41 @@ export async function Header() {
                     </nav>
                 </div>
 
-                <UserButton />
+                {session ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <div className="flex items-center gap-2 cursor-pointer">
+                                <span className="text-sm font-medium hidden sm:inline-block">
+                                    {userName}
+                                </span>
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={avatarUrl || ""} alt="User avatar" />
+                                    <AvatarFallback>
+                                        {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel className="break-all">{userEmail}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <Link href="/profile">
+                                <DropdownMenuItem className="cursor-pointer">
+                                    <UserRound className="mr-2 h-4 w-4" />
+                                    <span>Profile</span>
+                                </DropdownMenuItem>
+                            </Link>
+                            <Link href="/auth/sign-out">
+                                <DropdownMenuItem className="cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Sign out</span>
+                                </DropdownMenuItem>
+                            </Link>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <AuthUserButton />
+                )}
             </div>
         </header>
     )
