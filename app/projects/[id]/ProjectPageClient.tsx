@@ -8,7 +8,7 @@ import { DeleteProjectButton } from "@/components/DeleteProjectButton"
 import { ProjectSidebar } from "@/components/ProjectSidebar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Pencil, Save, X } from "lucide-react"
+import { Pencil, Save, X, Trash2 } from "lucide-react"
 
 interface Subtask {
     title: string
@@ -156,6 +156,18 @@ export function ProjectPageClient({
         }
     }
 
+    const handleDeleteSubtask = async (index: number) => {
+        try {
+            const newSubtasks = [...subtasks]
+            newSubtasks.splice(index, 1)
+            setSubtasks(newSubtasks)
+            toast.success('Subtask deleted successfully!')
+        } catch (error) {
+            console.error('Error deleting subtask:', error)
+            toast.error('Failed to delete subtask')
+        }
+    }
+
     return (
         <div className="flex h-[calc(100vh-4rem)]">
             <ProjectSidebar
@@ -293,13 +305,22 @@ export function ProjectPageClient({
                                                     <>
                                                         <div className="flex justify-between items-center mb-2">
                                                             <h3 className="font-medium">{subtask.title}</h3>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => handleEdit(index)}
-                                                            >
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Button>
+                                                            <div className="flex items-center gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleEdit(index)}
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleDeleteSubtask(index)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                         <p className="text-muted-foreground mb-2">{subtask.description}</p>
                                                         <div className="flex flex-wrap gap-2 mb-2">
