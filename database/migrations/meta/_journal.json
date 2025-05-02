@@ -15,6 +15,13 @@
       "when": 1746136073803,
       "tag": "0001_old_groot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746210529325,
+      "tag": "0002_purple_living_tribunal",
+      "breakpoints": true
     }
   ]
 }
