@@ -11,15 +11,7 @@ import { Pencil, Save, X } from "lucide-react"
 import { ProjectMembersSection } from "./sections/ProjectMembersSection"
 import { GeneratedSubtasks } from "./sections/GeneratedSubtasks"
 import { TodoList } from "./sections/TodoList"
-
-export interface Subtask {
-    title: string
-    description: string
-    requiredSkills: string[]
-    assignedMembers: string[]
-    reasoning: string
-    status: "todo" | "inprogress" | "completed"
-}
+import { Subtask } from "@/app/types"
 
 interface ProjectPageClientProps {
     project: {

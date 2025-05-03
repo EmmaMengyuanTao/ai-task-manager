@@ -15,7 +15,7 @@ export interface Task {
     id: number
     title: string
     description: string
-    status: "todo" | "inprogress" | "completed"
+    status: "todo" | "inprogress" | "done"
     note: string | null
     requiredSkills: Skill[]
     assignedMembers: User[]
@@ -24,3 +24,12 @@ export interface Task {
     createdAt: Date
     updatedAt: Date
 } 
+
+export interface Subtask {
+    title: string
+    description: string
+    requiredSkills: string[]
+    assignedMembers: string[]
+    reasoning: string
+    status: "todo" | "inprogress" | "done"
+}

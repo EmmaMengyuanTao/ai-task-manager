@@ -11,15 +11,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Subtask } from "@/app/types"
 
-export interface Subtask {
-    title: string
-    description: string
-    requiredSkills: string[]
-    assignedMembers: string[]
-    reasoning: string
-    status: "todo" | "inprogress" | "completed"
-}
 
 interface GeneratedSubtasksProps {
     projectId: number

@@ -54,8 +54,8 @@ function DraggableCard({ task }: { task: Task }) {
                 ))}
             </div>
         </div>
-        )
-    }
+    )
+}
     
 export function TodoList({ projectId }: TodoListProps) {
     const [tasks, setTasks] = useState<Task[]>([])
@@ -77,33 +77,49 @@ export function TodoList({ projectId }: TodoListProps) {
         }
 
         fetchTasks()
-    }, [projectId])
+    }, [ projectId ])
 
     const columns = [
         { id: "todo", title: "To Do" },
         { id: "inprogress", title: "In Progress" },
-        { id: "completed", title: "Completed" },
+        { id: "done", title: "Done" },
     ]
 
-    const handleDragEnd = (event: DragEndEvent) => {
-    const { over, active } = event
-    if (!over) return
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { over, active } = event
+        if (!over) return
 
-    const taskId = active.id
-    const newStatus = over.id as "todo" | "inprogress" | "completed"
+        const taskId = active.id
+        const newStatus = over.id as "todo" | "inprogress" | "done"
 
-    setTasks(prev =>
-        prev.map(task =>
-            task.id.toString() === taskId ? { ...task, status: newStatus } : task
+        setTasks(prev =>
+            prev.map(task =>
+                task.id.toString() === taskId ? { ...task, status: newStatus } : task
+            )
         )
-    )
 
-    // Optionally, send update to backend:
-    fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-    }).catch((err) => console.error("Failed to update task:", err))
+        try {
+            const response = await fetch(`/api/tasks/${taskId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to update task status")
+            }
+
+            toast.success("Task status updated successfully")
+        } catch (error) {
+            console.error("Failed to update task:", error)
+            toast.error("Failed to update task status")
+
+            setTasks(prev =>
+                prev.map(task =>
+                    task.id.toString() === taskId ? { ...task, status: task.status } : task
+                )
+            )
+        }
     }
 
     if (isLoading) return <div className="p-6">Loading tasks...</div>
