@@ -57,11 +57,6 @@ export function ProjectSidebar({
                         </Button>
                     </nav>
                 </div>
-                {activeSection === "members" && canInvite && (
-                    <div className="p-4 border-t">
-                        <InviteUserForm projectId={projectId} />
-                    </div>
-                )}
             </div>
         </div>
     )

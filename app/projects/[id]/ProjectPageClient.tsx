@@ -7,22 +7,7 @@ import { DeleteProjectButton } from "@/components/DeleteProjectButton"
 import { ProjectSidebar } from "@/components/ProjectSidebar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Pencil, Save, X, Trash2, UserPlus, UserMinus } from "lucide-react"
-import {
-    DndContext,
-    DragEndEvent,
-    DragOverlay,
-    DragStartEvent,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
-} from "@dnd-kit/core"
-import {
-    SortableContext,
-    arrayMove,
-    verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
+import { Pencil, Save, X } from "lucide-react"
 import { ProjectMembersSection } from "./sections/ProjectMembersSection"
 import { GeneratedSubtasks } from "./sections/GeneratedSubtasks"
 import { TodoList } from "./sections/TodoList"
@@ -77,29 +62,11 @@ export function ProjectPageClient({
         }))
     )
     const [activeSection, setActiveSection] = useState("subtasks")
-    const [editingIndex, setEditingIndex] = useState<number | null>(null)
-    const [editedSubtask, setEditedSubtask] = useState<Subtask | null>(null)
     const [isEditingProject, setIsEditingProject] = useState(false)
     const [editedProject, setEditedProject] = useState({
         name: project.name,
         description: project.description || ""
     })
-    const [selectedMember, setSelectedMember] = useState<string>("")
-    const [activeId, setActiveId] = useState<string | null>(null)
-
-    const sensors = useSensors(
-        useSensor(MouseSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 300,
-                tolerance: 5,
-            },
-        })
-    )
 
     const handleGenerateSubtasks = async () => {
         setIsLoading(true)
@@ -175,36 +142,6 @@ export function ProjectPageClient({
         })
     }
 
-    const handleEdit = (index: number) => {
-        setEditingIndex(index)
-        setEditedSubtask({ ...subtasks[index] })
-    }
-
-    const handleSave = (index: number) => {
-        if (editedSubtask) {
-            const newSubtasks = [...subtasks]
-            newSubtasks[index] = editedSubtask
-            setSubtasks(newSubtasks)
-            setEditingIndex(null)
-            setEditedSubtask(null)
-            toast.success('Subtask updated successfully!')
-        }
-    }
-
-    const handleCancel = () => {
-        setEditingIndex(null)
-        setEditedSubtask(null)
-    }
-
-    const handleChange = (field: keyof Subtask, value: string) => {
-        if (editedSubtask) {
-            setEditedSubtask({
-                ...editedSubtask,
-                [field]: value
-            })
-        }
-    }
-
     const handleDeleteSubtask = async (index: number) => {
         try {
             const newSubtasks = [...subtasks]
@@ -215,74 +152,6 @@ export function ProjectPageClient({
             console.error('Error deleting subtask:', error)
             toast.error('Failed to delete subtask')
         }
-    }
-
-    const handleAddMember = () => {
-        if (selectedMember && editedSubtask) {
-            if (!editedSubtask.assignedMembers.includes(selectedMember)) {
-                setEditedSubtask({
-                    ...editedSubtask,
-                    assignedMembers: [...editedSubtask.assignedMembers, selectedMember]
-                })
-                setSelectedMember("")
-                toast.success('Member added successfully!')
-            } else {
-                toast.error('Member already assigned!')
-            }
-        }
-    }
-
-    const handleRemoveMember = (member: string) => {
-        if (editedSubtask) {
-            setEditedSubtask({
-                ...editedSubtask,
-                assignedMembers: editedSubtask.assignedMembers.filter(m => m !== member)
-            })
-            toast.success('Member removed successfully!')
-        }
-    }
-
-    const handleDragStart = (event: DragStartEvent) => {
-        setActiveId(event.active.id as string)
-    }
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        setActiveId(null)
-        const { active, over } = event
-        if (!over) return
-
-        const activeId = active.id as string
-        const overId = over.id as string
-
-        // Extract status from the IDs
-        const [activeStatus] = activeId.split("-")
-        const [overStatus] = overId.split("-")
-        const activeIndex = parseInt(activeId.split("-")[1])
-
-        // If dropped in the same column, keep the same order
-        if (activeStatus === overStatus) {
-            return
-        }
-
-        // Move to the new column
-        const sourceSubtasks = subtasks.filter(subtask => subtask.status === activeStatus)
-        const destSubtasks = subtasks.filter(subtask => subtask.status === overStatus)
-
-        const [movedSubtask] = sourceSubtasks.splice(activeIndex, 1)
-        movedSubtask.status = overStatus as "todo" | "inprogress" | "completed"
-        destSubtasks.push(movedSubtask) // Always append to the end
-
-        const newSubtasks = subtasks.map(subtask => {
-            if (subtask.status === activeStatus) {
-                return sourceSubtasks.shift() || subtask
-            }
-            if (subtask.status === overStatus) {
-                return destSubtasks.shift() || subtask
-            }
-            return subtask
-        })
-
-        setSubtasks(newSubtasks)
     }
 
     const handleUpdateSubtask = (index: number, subtask: Subtask) => {
