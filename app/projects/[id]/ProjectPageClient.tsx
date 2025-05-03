@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { InviteUserForm } from "@/components/InviteUserForm"
 import { DeleteProjectButton } from "@/components/DeleteProjectButton"
 import { ProjectSidebar } from "@/components/ProjectSidebar"
 import { Input } from "@/components/ui/input"
@@ -24,15 +23,9 @@ import {
     arrayMove,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
-import { SortableItem } from "@/components/SortableItem"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { ProjectMembersSection } from "@/components/ProjectMembersSection"
+import { ProjectMembersSection } from "./sections/ProjectMembersSection"
+import { GeneratedSubtasks } from "./sections/GeneratedSubtasks"
+import { TodoList } from "./sections/TodoList"
 
 export interface Subtask {
     title: string
@@ -292,6 +285,12 @@ export function ProjectPageClient({
         setSubtasks(newSubtasks)
     }
 
+    const handleUpdateSubtask = (index: number, subtask: Subtask) => {
+        const newSubtasks = [...subtasks]
+        newSubtasks[index] = subtask
+        setSubtasks(newSubtasks)
+    }
+
     return (
         <div className="flex h-[calc(100vh-4rem)]">
             <ProjectSidebar
@@ -373,253 +372,18 @@ export function ProjectPageClient({
                             )}
                         </div>
 
-                        {subtasks.length > 0 && (
-                            <div className="rounded-lg border bg-card mb-8">
-                                <div className="p-6">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-xl font-semibold">Generated Subtasks</h2>
-                                        <p className="text-sm text-muted-foreground">
-                                            Last updated: {new Date().toISOString().split('T')[0]} {new Date().toTimeString().split(' ')[0]}
-                                        </p>
-                                    </div>
-                                    <div className="grid gap-4">
-                                        {subtasks.map((subtask, index) => (
-                                            <div
-                                                key={index}
-                                                className="p-4 rounded-md border"
-                                            >
-                                                {editingIndex === index ? (
-                                                    <div className="space-y-4">
-                                                        <div className="flex justify-between items-center">
-                                                            <Input
-                                                                value={editedSubtask?.title || ""}
-                                                                onChange={(e) => handleChange("title", e.target.value)}
-                                                                placeholder="Task title"
-                                                            />
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() => handleSave(index)}
-                                                                >
-                                                                    <Save className="h-4 w-4 mr-2" />
-                                                                    Save
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    onClick={handleCancel}
-                                                                >
-                                                                    <X className="h-4 w-4 mr-2" />
-                                                                    Cancel
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                        <Textarea
-                                                            value={editedSubtask?.description || ""}
-                                                            onChange={(e) => handleChange("description", e.target.value)}
-                                                            placeholder="Task description"
-                                                            className="min-h-[100px]"
-                                                        />
-                                                        <div className="space-y-2">
-                                                            <div className="flex items-center gap-2">
-                                                                <Select
-                                                                    value={selectedMember}
-                                                                    onValueChange={setSelectedMember}
-                                                                >
-                                                                    <SelectTrigger className="w-[180px]">
-                                                                        <SelectValue placeholder="Select a member" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        {members.map(member => (
-                                                                            <SelectItem
-                                                                                key={member.userId}
-                                                                                value={member.userName || member.userEmail}
-                                                                            >
-                                                                                {member.userName || member.userEmail}
-                                                                            </SelectItem>
-                                                                        ))}
-                                                                    </SelectContent>
-                                                                </Select>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={handleAddMember}
-                                                                    disabled={!selectedMember}
-                                                                >
-                                                                    <UserPlus className="h-4 w-4 mr-2" />
-                                                                    Add
-                                                                </Button>
-                                                            </div>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {editedSubtask?.assignedMembers.map((member) => (
-                                                                    <div
-                                                                        key={member}
-                                                                        className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-secondary/10"
-                                                                    >
-                                                                        {member}
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="ghost"
-                                                                            className="h-4 w-4 p-0"
-                                                                            onClick={() => handleRemoveMember(member)}
-                                                                        >
-                                                                            <UserMinus className="h-3 w-3" />
-                                                                        </Button>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <Textarea
-                                                            value={editedSubtask?.reasoning || ""}
-                                                            onChange={(e) => handleChange("reasoning", e.target.value)}
-                                                            placeholder="Reasoning"
-                                                            className="min-h-[60px]"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <h3 className="font-medium">{subtask.title}</h3>
-                                                            <div className="flex items-center gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    onClick={() => handleEdit(index)}
-                                                                >
-                                                                    <Pencil className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    onClick={() => handleDeleteSubtask(index)}
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                        <p className="text-muted-foreground mb-2">{subtask.description}</p>
-                                                        <div className="flex flex-wrap gap-2 mb-2">
-                                                            {subtask.requiredSkills.map((skill: string) => (
-                                                                <span
-                                                                    key={skill}
-                                                                    className="px-2 py-1 text-xs rounded-full bg-primary/10"
-                                                                >
-                                                                    {skill}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2 mb-2">
-                                                            {subtask.assignedMembers.map((member: string) => (
-                                                                <span
-                                                                    key={member}
-                                                                    className="px-2 py-1 text-xs rounded-full bg-secondary/10"
-                                                                >
-                                                                    {member}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                        <p className="text-sm text-muted-foreground">{subtask.reasoning}</p>
-                                                    </>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        <GeneratedSubtasks
+                            projectId={projectId}
+                            subtasks={subtasks}
+                            members={members}
+                            onUpdate={handleUpdateSubtask}
+                            onDelete={handleDeleteSubtask}
+                        />
                     </>
                 )}
 
                 {activeSection === "todolist" && (
-                    <div className="rounded-lg border bg-card">
-                        <div className="p-6">
-                            <h2 className="text-xl font-semibold mb-4">Todo List</h2>
-                            <DndContext
-                                sensors={sensors}
-                                onDragStart={handleDragStart}
-                                onDragEnd={handleDragEnd}
-                            >
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="space-y-4 p-4 rounded-lg bg-background">
-                                        <h3 className="text-lg font-medium">To Do</h3>
-                                        <div className="space-y-2 min-h-[100px]">
-                                            <SortableContext
-                                                items={subtasks
-                                                    .filter(subtask => subtask.status === "todo")
-                                                    .map((_, index) => `todo-${index}`)}
-                                                strategy={verticalListSortingStrategy}
-                                            >
-                                                {subtasks
-                                                    .filter(subtask => subtask.status === "todo")
-                                                    .map((subtask, index) => (
-                                                        <SortableItem
-                                                            key={`todo-${index}`}
-                                                            id={`todo-${index}`}
-                                                            subtask={subtask}
-                                                        />
-                                                    ))}
-                                            </SortableContext>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 p-4 rounded-lg bg-background">
-                                        <h3 className="text-lg font-medium">In Progress</h3>
-                                        <div className="space-y-2 min-h-[100px]">
-                                            <SortableContext
-                                                items={subtasks
-                                                    .filter(subtask => subtask.status === "inprogress")
-                                                    .map((_, index) => `inprogress-${index}`)}
-                                                strategy={verticalListSortingStrategy}
-                                            >
-                                                {subtasks
-                                                    .filter(subtask => subtask.status === "inprogress")
-                                                    .map((subtask, index) => (
-                                                        <SortableItem
-                                                            key={`inprogress-${index}`}
-                                                            id={`inprogress-${index}`}
-                                                            subtask={subtask}
-                                                        />
-                                                    ))}
-                                            </SortableContext>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 p-4 rounded-lg bg-background">
-                                        <h3 className="text-lg font-medium">Completed</h3>
-                                        <div className="space-y-2 min-h-[100px]">
-                                            <SortableContext
-                                                items={subtasks
-                                                    .filter(subtask => subtask.status === "completed")
-                                                    .map((_, index) => `completed-${index}`)}
-                                                strategy={verticalListSortingStrategy}
-                                            >
-                                                {subtasks
-                                                    .filter(subtask => subtask.status === "completed")
-                                                    .map((subtask, index) => (
-                                                        <SortableItem
-                                                            key={`completed-${index}`}
-                                                            id={`completed-${index}`}
-                                                            subtask={subtask}
-                                                        />
-                                                    ))}
-                                            </SortableContext>
-                                        </div>
-                                    </div>
-                                </div>
-                                <DragOverlay>
-                                    {activeId ? (
-                                        <div className="p-4 rounded-md border bg-white shadow-lg">
-                                            <h4 className="font-medium">
-                                                {subtasks.find(subtask =>
-                                                    subtask.status === activeId.split("-")[0] &&
-                                                    subtask === subtasks[parseInt(activeId.split("-")[1])]
-                                                )?.title}
-                                            </h4>
-                                        </div>
-                                    ) : null}
-                                </DragOverlay>
-                            </DndContext>
-                        </div>
-                    </div>
+                    <TodoList projectId={projectId} />
                 )}
 
                 {activeSection === "members" && (

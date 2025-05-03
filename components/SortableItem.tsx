@@ -2,14 +2,14 @@
 
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Subtask } from "@/app/projects/[id]/ProjectPageClient"
+import { Task } from "@/app/types"
 
 interface SortableItemProps {
     id: string
-    subtask: Subtask
+    task: Task
 }
 
-export function SortableItem({ id, subtask }: SortableItemProps) {
+export function SortableItem({ id, task }: SortableItemProps) {
     const {
         attributes,
         listeners,
@@ -35,16 +35,26 @@ export function SortableItem({ id, subtask }: SortableItemProps) {
                 }`}
         >
             <div className="flex justify-between items-start mb-2">
-                <h4 className="font-medium text-card-foreground">{subtask.title}</h4>
+                <h4 className="font-medium text-card-foreground">{task.title}</h4>
             </div>
-            <p className="text-sm text-muted-foreground">{subtask.description}</p>
+            <p className="text-sm text-muted-foreground">{task.description}</p>
             <div className="flex flex-wrap gap-2 mt-2">
-                {subtask.assignedMembers.map((member) => (
+                {task.requiredSkills?.filter(skill => skill?.id).map((skill) => (
                     <span
-                        key={member}
+                        key={`skill-${skill.id}`}
+                        className="px-2 py-1 text-xs rounded-full bg-primary/10"
+                    >
+                        {skill.name}
+                    </span>
+                ))}
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+                {task.assignedMembers?.filter(member => member?.id).map((member) => (
+                    <span
+                        key={`member-${member.id}`}
                         className="px-2 py-1 text-xs rounded-full bg-secondary/10 text-secondary-foreground"
                     >
-                        {member}
+                        {member.name}
                     </span>
                 ))}
             </div>
