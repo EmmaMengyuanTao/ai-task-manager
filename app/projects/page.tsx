@@ -124,6 +124,7 @@ export default async function ProjectsPage() {
                             role={project.role}
                             userId={session.user.id}
                             members={project.members}
+                            deadline={project.deadline ? project.deadline.toISOString() : null}
                         />
                     ))}
                 </div>

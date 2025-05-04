@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -7,9 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 const DatePicker = ({ date, onDateChange, className = "", buttonClassName, dateFormat = "yyyy/MM/dd" }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleSelect = (selectedDate) => {
+    onDateChange(selectedDate);
+    setOpen(false);
+  };
+
   return (
     <div className={cn("", className)}>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -24,7 +31,7 @@ const DatePicker = ({ date, onDateChange, className = "", buttonClassName, dateF
           >
             <CalendarIcon className="h-5 w-5 opacity-80 mr-1" />
             {date ? (
-              <span>Deadline: {format(date, "yyyy/MM/dd")}</span>
+              <span>Deadline: {format(date, dateFormat)}</span>
             ) : (
               <span>No due date</span>
             )}
@@ -34,7 +41,7 @@ const DatePicker = ({ date, onDateChange, className = "", buttonClassName, dateF
           <Calendar
             mode="single"
             selected={date}
-            onSelect={onDateChange}
+            onSelect={handleSelect}
             initialFocus
             className="rounded-md border"
             classNames={{

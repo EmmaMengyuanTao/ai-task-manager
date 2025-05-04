@@ -63,7 +63,15 @@ export function CreateProjectForm({ userId }: { userId: string }) {
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (isOpen) {
+                    setDueDate(null);
+                }
+                setOpen(isOpen);
+            }}
+        >
             <DialogTrigger asChild>
                 <Button variant="gradient">Create New Project</Button>
             </DialogTrigger>
