@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         await db.delete(tasks).where(eq(tasks.projectId, projectId));
 
         const existingSkills = await db.select().from(skills)
-        const skillMap = new Map(existingSkills.map(skill => [skill.name.toLowerCase(), skill.id]))
+        const skillMap = new Map(existingSkills.map(skill => [skill.name, skill.id]))
 
         const result = await db.transaction(async (tx) => {
             const savedTasks = []
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
                 const skillIds = []
                 for (const skillName of subtask.requiredSkills) {
-                    const lowerSkillName = skillName.toLowerCase()
+                    const lowerSkillName = skillName
                     let skillId = skillMap.get(lowerSkillName)
 
                     if (!skillId) {
