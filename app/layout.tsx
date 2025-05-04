@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import "@/styles/globals.css"
-import { Header } from "@/components/header"
 import type { ReactNode } from "react"
 import { Providers } from "./providers"
+import { AppShell } from "./app-shell"
+import { SidebarProvider } from "@/components/SidebarContext"
 
 export const metadata: Metadata = {
     title: "Better Auth Next.js Starter",
@@ -16,12 +17,11 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className="font-sans antialiased dark">
+            <body className="font-sans antialiased light">
                 <Providers>
-                    <div className="flex min-h-svh flex-col">
-                        <Header />
-                        {children}
-                    </div>
+                    <SidebarProvider>
+                        <AppShell>{children}</AppShell>
+                    </SidebarProvider>
                 </Providers>
             </body>
         </html>

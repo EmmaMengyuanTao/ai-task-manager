@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1746121002530,
-      "tag": "0000_whole_wendell_rand",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1746136073803,
-      "tag": "0001_old_groot",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1746210529325,
-      "tag": "0002_purple_living_tribunal",
+      "when": 1746323231825,
+      "tag": "0000_perpetual_the_call",
       "breakpoints": true
     }
   ]
