@@ -55,7 +55,7 @@ function Button({
                 {props.children}
             </span>
             {variant === "gradient" && (
-                <span className="absolute inset-0 z-0 bg-gradient-to-r from-blue-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                <span className="absolute inset-0 z-0 bg-gradient-to-r from-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             )}
         </Comp>
     )

@@ -157,7 +157,7 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
             <div className="space-y-3">
                 <label className="text-sm font-medium">Skills</label>
                 <div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-input bg-white p-2">
-                    <AnimatePresence>
+                    <AnimatePresence mode="wait">
                         {skills.length > 0 ? (
                             skills.map((skill) => (
                                 <motion.span
@@ -185,7 +185,15 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                                 </motion.span>
                             ))
                         ) : (
-                            <p className="px-1 text-sm text-muted-foreground">No skills added yet.</p>
+                            <motion.p
+                                key="placeholder"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="px-1 text-sm text-muted-foreground"
+                            >
+                                No skills added yet.
+                            </motion.p>
                         )}
                     </AnimatePresence>
                 </div>

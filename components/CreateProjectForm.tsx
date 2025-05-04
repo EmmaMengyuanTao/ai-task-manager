@@ -61,7 +61,7 @@ export function CreateProjectForm({ userId }: { userId: string }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Create New Project</Button>
+                <Button variant="gradient">Create New Project</Button>
             </DialogTrigger>
             <DialogContent className="max-w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-4 my-8 bg-white rounded-lg shadow-lg p-6 max-h-[90vh]">
                 <DialogHeader>
