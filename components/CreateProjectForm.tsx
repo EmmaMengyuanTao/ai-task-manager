@@ -63,7 +63,7 @@ export function CreateProjectForm({ userId }: { userId: string }) {
             <DialogTrigger asChild>
                 <Button>Create New Project</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-4 my-8 bg-white rounded-lg shadow-lg p-6 max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
@@ -80,7 +80,7 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                             placeholder="Enter project name"
                             disabled={isPending}
                             required
-                            className="focus-visible:ring-1 focus-visible:ring-offset-1"
+                            className="border border-gray-300 bg-gray-50 focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
                         />
                     </div>
                     <div className="space-y-3">
@@ -95,7 +95,7 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                             placeholder="Describe the project content and goals"
                             disabled={isPending}
                             rows={4}
-                            className="focus-visible:ring-1 focus-visible:ring-offset-1"
+                            className="border border-gray-300 bg-gray-50 focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
                         />
                     </div>
                     <div className="flex justify-end mt-6">

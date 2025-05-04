@@ -13,6 +13,8 @@ import { type AvatarId, getAvatarUrl } from '@/lib/avatars';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 import useSWR, { mutate } from 'swr'
+import { Textarea } from "@/components/ui/textarea"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface ProfileFormProps {
     userId: string
@@ -83,12 +85,18 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 rounded-lg border bg-card text-card-foreground p-6 shadow-sm">
+        <motion.form
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            onSubmit={handleSubmit}
+            className="w-full max-w-xl space-y-4 rounded-xl border border-gray-200 bg-white text-card-foreground p-8 shadow-md"
+        >
             <h2 className="text-xl font-semibold text-center">Edit Profile</h2>
             
             <div className="flex flex-col items-center justify-center space-y-4">
                 <div className="relative">
-                    <Avatar className="w-20 h-20">
+                    <Avatar className="w-15 h-15">
                         <AvatarImage 
                             src={getAvatarUrl(avatarId || "default")} 
                             alt="Profile avatar" 
@@ -118,7 +126,7 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                 </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
                 <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Name
                 </label>
@@ -131,40 +139,55 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                 />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
                 <label htmlFor="description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Profile
                 </label>
-                <Input
+                <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDecription(e.target.value)}
                     placeholder="Tell us about yourself"
                     disabled={isPending}
+                    rows={3}
+                    className="resize-y max-h-40"
                 />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <label className="text-sm font-medium">Skills</label>
-                <div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-input bg-background p-2">
-                    {skills.length > 0 ? (
-                        skills.map((skill) => (
-                            <Badge key={skill} variant="secondary" className="flex items-center gap-1 pl-2 pr-1 py-0.5">
-                                {skill}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveSkill(skill)}
-                                    className="ml-1 rounded-full p-0.5 outline-none ring-offset-background hover:bg-muted focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                    aria-label={`Remove ${skill} skill`}
-                                    disabled={isPending}
+                <div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-input bg-white p-2">
+                    <AnimatePresence>
+                        {skills.length > 0 ? (
+                            skills.map((skill) => (
+                                <motion.span
+                                    key={skill}
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
                                 >
-                                    <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                                </button>
-                            </Badge>
-                        ))
-                    ) : (
-                        <p className="px-1 text-sm text-muted-foreground">No skills added yet.</p>
-                    )}
+                                    <Badge
+                                        variant="secondary"
+                                        className="flex items-center gap-1 pl-2 pr-1 py-0.5"
+                                    >
+                                        {skill}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveSkill(skill)}
+                                            className="ml-1 rounded-full p-0.5 outline-none ring-offset-background hover:bg-muted focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                            aria-label={`Remove ${skill} skill`}
+                                            disabled={isPending}
+                                        >
+                                            <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                        </button>
+                                    </Badge>
+                                </motion.span>
+                            ))
+                        ) : (
+                            <p className="px-1 text-sm text-muted-foreground">No skills added yet.</p>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 <div className="flex gap-2">
@@ -192,9 +215,14 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                 </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+                type="submit"
+                variant="gradient"
+                className="w-full h-10 mt-2"
+                disabled={isPending}
+            >
                 {isPending ? "Saving..." : "Save Profile"}
             </Button>
-        </form>
+        </motion.form>
     )
 }
