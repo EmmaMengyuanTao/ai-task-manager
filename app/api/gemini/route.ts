@@ -131,11 +131,11 @@ export async function POST(request: Request) {
         try {
             const parsedResponse = JSON.parse(cleanedText);
 
-            // // Save the generated subtasks to the database
-            // await db.insert(generatedSubtasks).values({
-            //     projectId: projectId,
-            //     subtasks: JSON.stringify(parsedResponse.subtasks)
-            // });
+            // Save the generated subtasks to the database
+            await db.insert(generatedSubtasks).values({
+                projectId: projectId,
+                subtasks: JSON.stringify(parsedResponse.subtasks)
+            });
 
             return NextResponse.json(parsedResponse);
         } catch (error) {

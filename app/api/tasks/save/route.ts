@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/database/db"
 import { tasks, taskMembers, taskSkills } from "@/database/schema/projects"
 import { skills } from "@/database/schema/skills"
+import { eq } from "drizzle-orm"
 
 export async function POST(req: Request) {
     try {
@@ -21,6 +22,9 @@ export async function POST(req: Request) {
         if (!projectId || !subtasks || !Array.isArray(subtasks)) {
             return new NextResponse("Invalid request body", { status: 400 })
         }
+
+        // Delete all tasks in this project
+        await db.delete(tasks).where(eq(tasks.projectId, projectId));
 
         const existingSkills = await db.select().from(skills)
         const skillMap = new Map(existingSkills.map(skill => [skill.name.toLowerCase(), skill.id]))

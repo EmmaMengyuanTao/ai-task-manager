@@ -5,6 +5,7 @@ import { eq, and} from "drizzle-orm"
 import { projects, projectMembers, users, generatedSubtasks, profiles } from "@/database/schema"
 import { notFound } from "next/navigation"
 import { ProjectPageClient } from "./ProjectPageClient"
+import { Subtask } from "@/app/types"
 
 interface ProjectPageProps {
     params: {
@@ -92,13 +93,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         limit: 1
     })
 
-    const initialSubtasks = latestSubtasks.length > 0 ? (latestSubtasks[0].subtasks as {
-        title: string;
-        description: string;
-        requiredSkills: string[];
-        assignedMembers: string[];
-        reasoning: string;
-    }[]) : []
+    const initialSubtasks = latestSubtasks.length > 0 ? (latestSubtasks[0].subtasks as Subtask[]) : []
 
     // Check if current user has permission to invite
     const isCreator = project.creatorId === session.user.id
@@ -110,7 +105,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     return (
         <ProjectPageClient
             project={project}
-            projectId={projectId}
             members={members}
             canInvite={canInvite}
             userId={session.user.id}

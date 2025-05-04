@@ -1,10 +1,10 @@
-import { desc } from "drizzle-orm"
+// import { desc } from "drizzle-orm"
 
-import { db } from "@/database/db"
-import { todos } from "@/database/schema"
+// import { db } from "@/database/db"
+// import { todos } from "@/database/schema"
 
-import { Button } from "@/components/ui/button"
-import { deleteTodo } from "@/actions/todos"
+// import { Button } from "@/components/ui/button"
+// import { deleteTodo } from "@/actions/todos"
 
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -33,16 +33,16 @@ export default async function AdminPage() {
         )
     }
 
-    const allTodos = await db.query.todos.findMany({
-        with: {
-            user: {
-                columns: {
-                    name: true,
-                }
-            }
-        },
-        orderBy: [desc(todos.createdAt)]
-    });
+    // const allTodos = await db.query.todos.findMany({
+    //     with: {
+    //         user: {
+    //             columns: {
+    //                 name: true,
+    //             }
+    //         }
+    //     },
+    //     orderBy: [desc(todos.createdAt)]
+    // });
 
     return (
         <main className="py-8 px-4">
@@ -59,7 +59,7 @@ export default async function AdminPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {allTodos.length === 0 && (
+                            {/* {allTodos.length === 0 && (
                                 <tr>
                                     <td colSpan={3} className="py-2 px-4 text-center">No todos found</td>
                                 </tr>
@@ -81,7 +81,7 @@ export default async function AdminPage() {
                                         </form>
                                     </td>
                                 </tr>
-                            ))}
+                            ))} */}
                         </tbody>
                     </table>
                 </div>

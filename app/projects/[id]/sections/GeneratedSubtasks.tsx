@@ -11,37 +11,114 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Subtask } from "@/app/types"
-
+import { DeleteProjectButton } from "@/components/DeleteProjectButton"
+import { Subtask, Project } from "@/app/types"
 
 interface GeneratedSubtasksProps {
-    projectId: number
-    subtasks: Subtask[]
+    project: Project
     members: {
         userId: string
         userName: string | null
         userEmail: string
     }[]
-    onUpdate: (index: number, subtask: Subtask) => void
-    onDelete: (index: number) => void
+    userId: string
 }
 
 export function GeneratedSubtasks({
-    projectId,
-    subtasks,
+    project,
     members,
-    onUpdate,
-    onDelete,
+    userId
 }: GeneratedSubtasksProps) {
     const [isSaving, setIsSaving] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [isEditingProject, setIsEditingProject] = useState(false)
     const [editingIndex, setEditingIndex] = useState<number | null>(null)
     const [editedSubtask, setEditedSubtask] = useState<Subtask | null>(null)
     const [selectedMember, setSelectedMember] = useState<string>("")
     const [hasUnsavedSubtasks, setHasUnsavedSubtasks] = useState(false)
+    const [subtasks, setSubtasks] = useState<Subtask[]>([])
+    const [editedProject, setEditedProject] = useState({
+        name: project.name,
+        description: project.description || ""
+    })
 
     useEffect(() => {
         setHasUnsavedSubtasks(subtasks.length > 0)
     }, [subtasks])
+
+    const handleEditProject = () => {
+        setIsEditingProject(true)
+    }
+
+    const handleSaveProject = async () => {
+        try {
+            const response = await fetch(`/api/projects/${project.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: editedProject.name,
+                    description: editedProject.description
+                }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to update project')
+            }
+
+            setIsEditingProject(false)
+            toast.success('Project updated successfully!')
+        } catch (error) {
+            console.error('Error updating project:', error)
+            toast.error('Failed to update project')
+        }
+    }
+
+    const handleCancelProject = () => {
+        setIsEditingProject(false)
+        setEditedProject({
+            name: project.name,
+            description: project.description || ""
+        })
+    }
+
+    const handleGenerateSubtasks = async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ projectId: project.id }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to generate subtasks')
+            }
+
+            if (!data.subtasks) {
+                throw new Error('Invalid response format from AI')
+            }
+
+            // Add status field to each subtask and set all to "todo"
+            const subtasksWithStatus = data.subtasks.map((subtask: Subtask) => ({
+                ...subtask,
+                status: "todo" as const
+            }))
+
+            setSubtasks(subtasksWithStatus)
+            toast.success('Subtasks generated successfully!')
+        } catch (error) {
+            console.error('Error generating subtasks:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to generate subtasks')
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const handleSaveTasks = async () => {
         if (subtasks.length === 0) {
@@ -57,7 +134,7 @@ export function GeneratedSubtasks({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    projectId,
+                    projectId: project.id,
                     subtasks: subtasks.map(subtask => ({
                         ...subtask,
                         assignedMembers: subtask.assignedMembers.map(memberName => {
@@ -94,9 +171,12 @@ export function GeneratedSubtasks({
 
     const handleSave = (index: number) => {
         if (editedSubtask) {
-            onUpdate(index, editedSubtask)
+            const newSubtasks = [...subtasks]
+            newSubtasks[index] = editedSubtask
+            setSubtasks(newSubtasks)
             setEditingIndex(null)
             setEditedSubtask(null)
+            setHasUnsavedSubtasks(true)
             toast.success('Subtask updated successfully!')
         }
     }
@@ -140,8 +220,84 @@ export function GeneratedSubtasks({
         }
     }
 
+    const handleDelete = (index: number) => {
+        const newSubtasks = [...subtasks]
+        newSubtasks.splice(index, 1)
+        setSubtasks(newSubtasks)
+        toast.success('Subtask deleted successfully!')
+    }
+
     return (
         <div className="space-y-8">
+            <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                    {isEditingProject ? (
+                        <div className="flex-1 space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    value={editedProject.name}
+                                    onChange={(e) => setEditedProject({ ...editedProject, name: e.target.value })}
+                                    placeholder="Project name"
+                                    className="text-2xl font-bold"
+                                />
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        onClick={handleSaveProject}
+                                    >
+                                        <Save className="h-4 w-4 mr-2" />
+                                        Save
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={handleCancelProject}
+                                    >
+                                        <X className="h-4 w-4 mr-2" />
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                            <Textarea
+                                value={editedProject.description}
+                                onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
+                                placeholder="Project description"
+                                className="min-h-[100px]"
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-2xl font-bold">{editedProject.name}</h1>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={handleEditProject}
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={handleGenerateSubtasks}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? "Generating..." : "Generate Subtasks"}
+                                </Button>
+                                <DeleteProjectButton
+                                    projectId={project.id}
+                                    creatorId={project.creatorId}
+                                    userId={userId}
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
+                {!isEditingProject && editedProject.description && (
+                    <p className="text-muted-foreground mb-4">{editedProject.description}</p>
+                )}
+            </div>
+
             {subtasks.length > 0 && (
                 <div className="rounded-lg border bg-card">
                     <div className="p-6">
@@ -270,7 +426,7 @@ export function GeneratedSubtasks({
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => onDelete(index)}
+                                                        onClick={() => handleDelete(index)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -308,4 +464,4 @@ export function GeneratedSubtasks({
             )}
         </div>
     )
-} 
+}

@@ -33,3 +33,10 @@ export interface Subtask {
     reasoning: string
     status: "todo" | "inprogress" | "done"
 }
+
+export interface Project {
+    id: number
+    name: string
+    description: string | null
+    creatorId: string
+}
