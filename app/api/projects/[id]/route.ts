@@ -5,10 +5,8 @@ import { eq } from "drizzle-orm"
 import { projects } from "@/database/schema"
 import { NextResponse } from "next/server"
 
-export async function PATCH(
-    request: Request,
-    { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     try {
         const session = await auth.api.getSession({
             headers: await headers()
