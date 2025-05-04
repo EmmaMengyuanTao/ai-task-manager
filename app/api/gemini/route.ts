@@ -131,13 +131,20 @@ export async function POST(request: Request) {
         try {
             const parsedResponse = JSON.parse(cleanedText);
 
-            // // Save the generated subtasks to the database
-            // await db.insert(generatedSubtasks).values({
-            //     projectId: projectId,
-            //     subtasks: JSON.stringify(parsedResponse.subtasks)
-            // });
+            // Save the generated subtasks to the database
+            const insertedRows = await db.insert(generatedSubtasks)
+                .values({
+                    projectId: projectId,
+                    subtasks: JSON.stringify(parsedResponse.subtasks)
+                })
+                .returning({ id: generatedSubtasks.id });
 
-            return NextResponse.json(parsedResponse);
+            const insertedId = insertedRows[0]?.id;
+
+            return NextResponse.json({
+                id: insertedId,
+                subtasks: parsedResponse.subtasks
+            });
         } catch (error) {
             console.error("Error parsing Gemini response:", error);
             console.error("Raw response:", cleanedText);
