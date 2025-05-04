@@ -12,6 +12,7 @@ import { AvatarSelector } from './avatar-selector';
 import { type AvatarId, getAvatarUrl } from '@/lib/avatars';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
+import useSWR, { mutate } from 'swr'
 
 interface ProfileFormProps {
     userId: string
@@ -70,6 +71,7 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
                 if (result.success) {
                     toast.success("Profile updated successfully!")
                     router.refresh()
+                    mutate('/api/profile')
                 } else {
                     toast.error(result.error || "Failed to update profile.")
                 }

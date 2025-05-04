@@ -4,9 +4,13 @@ import { Menu, ChevronLeft } from "lucide-react"
 import { UserAccountNav } from "@/components/user-account-nav"
 import { authClient } from "@/lib/auth-client"
 import { getAvatarUrl } from "@/lib/avatars"
+import useSWR from 'swr'
+
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export function Header({ collapsed, setCollapsed }: { collapsed: boolean, setCollapsed: (c: boolean) => void }) {
     const { data: session } = authClient.useSession()
+    const { data: profile } = useSWR(session ? '/api/profile' : null, fetcher)
     
     return (
         <header className="sticky top-0 z-50 px-5 py-3 border-b bg-background/60 backdrop-blur">
@@ -28,9 +32,9 @@ export function Header({ collapsed, setCollapsed }: { collapsed: boolean, setCol
                 {session && (
                     <UserAccountNav 
                         user={{
-                            name: session.user.name,
+                            name: profile?.name ?? session.user.name,
                             email: session.user.email,
-                            avatarUrl: getAvatarUrl(session.user.image)
+                            avatarUrl: getAvatarUrl(profile?.avatarId ?? session.user.image)
                         }} 
                     />
                 )}
