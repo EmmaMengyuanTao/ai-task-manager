@@ -24,7 +24,7 @@ export function Header({ collapsed, setCollapsed }: { collapsed: boolean, setCol
                         {collapsed ? <Menu size={24} /> : <ChevronLeft size={24} />}
                     </button>
                     <Link href="/" className="flex items-center gap-2 text-title-foreground px-10">
-                        <span className="inline-block w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-400 to-orange-400" />
+                        <img src="/Logo.png" alt="TaskMosaic Logo" className="w-8 h-8" />
                         <span className="text-lg font-bold pl-2">TaskMosaic</span>
                     </Link>
                 </div>
