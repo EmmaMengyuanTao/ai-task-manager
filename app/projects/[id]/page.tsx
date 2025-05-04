@@ -93,6 +93,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         limit: 1
     })
 
+    const generatedSubtasksId = latestSubtasks.length > 0 ? latestSubtasks[0].id : null
     const initialSubtasks = latestSubtasks.length > 0 ? (latestSubtasks[0].subtasks as Subtask[]) : []
 
     // Check if current user has permission to invite
@@ -109,6 +110,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             canInvite={canInvite}
             userId={session.user.id}
             initialSubtasks={initialSubtasks}
+            generatedSubtasksId={generatedSubtasksId}
         />
     )
 } 

@@ -24,6 +24,7 @@ interface ProjectPageClientProps {
     canInvite: boolean
     userId: string
     initialSubtasks: Subtask[]
+    generatedSubtasksId: number | null
 }
 
 export function ProjectPageClient({
@@ -31,6 +32,8 @@ export function ProjectPageClient({
     members,
     canInvite,
     userId,
+    initialSubtasks,
+    generatedSubtasksId
 }: ProjectPageClientProps) {
     
     const [activeSection, setActiveSection] = useState("subtasks")
@@ -50,6 +53,8 @@ export function ProjectPageClient({
                         project={project}
                         members={members}
                         userId={userId}
+                        initialSubtasks={initialSubtasks}
+                        generatedSubtasksId={generatedSubtasksId}
                     />
                 )}
 

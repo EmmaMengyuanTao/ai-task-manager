@@ -22,12 +22,16 @@ interface GeneratedSubtasksProps {
         userEmail: string
     }[]
     userId: string
+    initialSubtasks: Subtask[]
+    generatedSubtasksId:  number | null
 }
 
 export function GeneratedSubtasks({
     project,
     members,
-    userId
+    userId,
+    initialSubtasks,
+    generatedSubtasksId
 }: GeneratedSubtasksProps) {
     const [isSaving, setIsSaving] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -36,7 +40,8 @@ export function GeneratedSubtasks({
     const [editedSubtask, setEditedSubtask] = useState<Subtask | null>(null)
     const [selectedMember, setSelectedMember] = useState<string>("")
     const [hasUnsavedSubtasks, setHasUnsavedSubtasks] = useState(false)
-    const [subtasks, setSubtasks] = useState<Subtask[]>([])
+    const [subtasks, setSubtasks] = useState<Subtask[]>(initialSubtasks)
+    const [generatedSubtasks_Id, setGeneratedSubtasksId] = useState<number | null>(generatedSubtasksId)
     const [editedProject, setEditedProject] = useState({
         name: project.name,
         description: project.description || ""
@@ -110,6 +115,7 @@ export function GeneratedSubtasks({
                 status: "todo" as const
             }))
 
+            setGeneratedSubtasksId(data.id)
             setSubtasks(subtasksWithStatus)
             toast.success('Subtasks generated successfully!')
         } catch (error) {
@@ -169,14 +175,35 @@ export function GeneratedSubtasks({
         setEditedSubtask({ ...subtasks[index] })
     }
 
-    const handleSave = (index: number) => {
+    const updateGenerateSubtasks = async (newSubtasks: Subtask[]) => {
+        try {
+            const response = await fetch(`/api/generated-subtasks/${generatedSubtasks_Id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ subtasks: newSubtasks }),
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to update subtask in DB")
+            }
+
+            setEditingIndex(null)
+            setEditedSubtask(null)
+            setHasUnsavedSubtasks(true)
+        } catch (error) {
+            console.error("Error updating subtask:", error)
+            toast.error("Failed to update subtask in database")
+        }
+    }
+
+    const handleSave = async (index: number) => {
         if (editedSubtask) {
             const newSubtasks = [...subtasks]
             newSubtasks[index] = editedSubtask
             setSubtasks(newSubtasks)
-            setEditingIndex(null)
-            setEditedSubtask(null)
-            setHasUnsavedSubtasks(true)
+            await updateGenerateSubtasks(newSubtasks)
             toast.success('Subtask updated successfully!')
         }
     }
@@ -220,10 +247,11 @@ export function GeneratedSubtasks({
         }
     }
 
-    const handleDelete = (index: number) => {
+    const handleDelete = async (index: number) => {
         const newSubtasks = [...subtasks]
         newSubtasks.splice(index, 1)
         setSubtasks(newSubtasks)
+        await updateGenerateSubtasks(newSubtasks)
         toast.success('Subtask deleted successfully!')
     }
 
@@ -302,7 +330,7 @@ export function GeneratedSubtasks({
                 <div className="rounded-lg border bg-card">
                     <div className="p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Generated Subtasks</h2>
+                            <h2 className="text-xl font-semibold">Latest Generated Subtasks</h2>
                             <div className="flex items-center gap-4">
                                 <p className="text-sm text-muted-foreground">
                                     Last updated: {new Date().toISOString().split('T')[0]} {new Date().toTimeString().split(' ')[0]}
