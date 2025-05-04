@@ -50,7 +50,7 @@
 :root {
     --background: oklch(0.98 0.01 240);
     --foreground: oklch(0.2 0.02 240);
-    --title-foreground: oklch(0.6 0.22 257.21);
+    --title-foreground: #3f515a;
 
     --muted: oklch(0.95 0.015 240);
     --muted-foreground: oklch(0.23 0.03 237.71);
