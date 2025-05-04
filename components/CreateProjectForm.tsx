@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import { createProject } from "@/actions/projectActions"
 import { toast } from "sonner"
+import DatePicker from './DatePicker';
 
 export function CreateProjectForm({ userId }: { userId: string }) {
     const router = useRouter()
@@ -19,6 +20,7 @@ export function CreateProjectForm({ userId }: { userId: string }) {
         name: "",
         description: ""
     })
+    const [dueDate, setDueDate] = useState<Date | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
@@ -40,12 +42,14 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                 const result = await createProject({
                     name: formData.name,
                     description: formData.description,
+                    deadline: dueDate,
                     creatorId: userId
                 })
 
                 if (result.success) {
                     toast.success("Project created successfully")
                     setFormData({ name: "", description: "" })
+                    setDueDate(null)
                     setOpen(false)
                     router.refresh()
                 } else {
@@ -98,6 +102,13 @@ export function CreateProjectForm({ userId }: { userId: string }) {
                             className="border border-gray-300 bg-gray-50 focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
                         />
                     </div>
+
+                    <DatePicker 
+                        date={dueDate}
+                        onDateChange={setDueDate}
+                        buttonClassName="h-10 px-4 py-2 w-auto"
+                    />
+                    
                     <div className="flex justify-end mt-6">
                         <Button type="submit" disabled={isPending}>
                             {isPending ? (

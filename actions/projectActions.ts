@@ -12,6 +12,7 @@ interface CreateProjectPayload {
     name: string
     description: string
     creatorId: string
+    deadline?: Date | null
 }
 
 // Update project name
@@ -92,7 +93,7 @@ export async function createProject(
         return { success: false, error: "Unauthorized operation" };
     }
 
-    const { name, description, creatorId } = payload
+    const { name, description, creatorId, deadline } = payload
 
     try {
         // Insert project
@@ -100,6 +101,7 @@ export async function createProject(
             name,
             description,
             creatorId,
+            deadline: deadline ?? null,
             createdAt: new Date(),
             updatedAt: new Date()
         }).returning({ id: projects.id });
