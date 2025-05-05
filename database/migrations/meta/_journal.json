@@ -8,6 +8,13 @@
       "when": 1746323231825,
       "tag": "0000_perpetual_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1746413650979,
+      "tag": "0001_dusty_vision",
+      "breakpoints": true
     }
   ]
 }

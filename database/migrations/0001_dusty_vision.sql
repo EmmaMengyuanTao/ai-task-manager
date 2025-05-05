@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "banned" SET DEFAULT false;
