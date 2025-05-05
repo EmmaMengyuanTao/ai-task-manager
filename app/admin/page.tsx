@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { UserToggleSwitch } from "@/components/UserToggleSwitch"
 import { db } from "@/database/db"
+import { eq } from "drizzle-orm"
+import { users } from "@/database/schema"
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +20,8 @@ export default async function AdminPage() {
         )
     }
 
-    const users = await db.query.users.findMany({
+    const usersList = await db.query.users.findMany({
+        where: eq(users.role, "user"),
         orderBy: (users, { desc }) => [desc(users.createdAt)],
     });
     
@@ -39,12 +42,12 @@ export default async function AdminPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {users.length === 0 && (
+                            {usersList.length === 0 && (
                                 <tr>
-                                    <td colSpan={3} className="py-2 px-4 text-center">No todos found</td>
+                                    <td colSpan={3} className="py-2 px-4 text-center">No users found</td>
                                 </tr>
                             )}
-                            {users.map((user) => (
+                            {usersList.map((user) => (
                                 <tr key={user.id} className="border-t">
                                     <td className="py-2 px-4">{user.name}</td>
                                     <td className="py-2 px-4">{user.email}</td>
