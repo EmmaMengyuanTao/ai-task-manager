@@ -1,4 +1,4 @@
-name: Deploy to AWS on push
+name: CI/CD to AWS
 
 on:
   push:
@@ -6,15 +6,15 @@ on:
       - main
 
 jobs:
-  deploy:
-    name: Build and Deploy
+  build-and-push:
+    name: Build and Push Docker Image to ECR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -27,11 +27,25 @@ jobs:
           | docker login --username AWS \
             --password-stdin 565393074467.dkr.ecr.us-east-1.amazonaws.com
 
-      - name: Build and push Docker image
+      - name: Build and Push Docker Image
         run: |
           docker build -t ai-project-manager .
           docker tag ai-project-manager:latest 565393074467.dkr.ecr.us-east-1.amazonaws.com/ai-project-manager:latest
           docker push 565393074467.dkr.ecr.us-east-1.amazonaws.com/ai-project-manager:latest
+
+  deploy:
+    name: Deploy to ECS
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: false  # defalut
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - name: Deploy new image to ECS
         run: |
