@@ -17,6 +17,7 @@ export default async function MyTaskPage() {
       dueDate: tasks.dueDate,
       projectId: tasks.projectId,
       projectName: projects.name,
+      status: tasks.status,
     })
     .from(taskMembers)
     .innerJoin(tasks, eq(taskMembers.taskId, tasks.id))

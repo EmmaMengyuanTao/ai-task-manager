@@ -1,36 +1,93 @@
 "use client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useState } from "react"
+import { toast } from "sonner"
 
 export default function TaskListSection({ grouped }: { grouped: any }) {
+
+  const [localGrouped, setLocalGrouped] = useState(grouped)
+
+  // Toggle task status
+  const handleToggle = async (projectId: number, task: any) => {
+    let newStatus: "todo" | "inprogress" | "done"
+    if (!task.status || task.status === "inprogress") {
+      newStatus = "todo"
+    } else if (task.status === "todo") {
+      newStatus = "done"
+    } else {
+      newStatus = "inprogress"
+    }
+    // Update local tasks
+    setLocalGrouped((prev: any) => {
+      const newTasks = prev[projectId].tasks.map((t: any) =>
+        t.taskId === task.taskId ? { ...t, status: newStatus } : t
+      )
+
+      newTasks.sort((a: any, b: any) => {
+        const order = { todo: 0, inprogress: 1, done: 2 }
+        return order[(a.status || "todo") as "todo" | "inprogress" | "done"] - order[(b.status || "todo") as "todo" | "inprogress" | "done"]
+      })
+      return {
+        ...prev,
+        [projectId]: { ...prev[projectId], tasks: newTasks }
+      }
+    })
+    // Update backend
+    try {
+      const res = await fetch(`/api/tasks/${task.taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      })
+      if (!res.ok) throw new Error("Failed to update task status")
+    } catch (e) {
+      toast.error("Failed to update task status")
+    }
+  }
+
   return (
     <>
-      {Object.values(grouped).length === 0 && <div className="text-muted-foreground">No tasks assigned to you.</div>}
-      {Object.values(grouped).map((group: any) => (
-        <div key={group.projectName} className="mb-8">
-          <div className="mb-1 text-lg font-semibold text-muted-foreground">{group.projectName}</div>
-          <div className="border-b mb-3" />
-          <ul className="space-y-2">
-            {group.tasks.map((task: any) => (
-              <TaskListItem key={task.taskId} task={task} />
-            ))}
-          </ul>
-        </div>
-      ))}
+      {Object.values(localGrouped).length === 0 && <div className="text-muted-foreground">No tasks assigned to you.</div>}
+      {Object.values(localGrouped).map((group: any) => {
+        // Render first sorted: done last
+        const sortedTasks = [...group.tasks].sort((a: any, b: any) => {
+          const order = { todo: 0, inprogress: 0, done: 1 }
+          return order[((a.status || "todo").toLowerCase() as "todo" | "inprogress" | "done")] - order[((b.status || "todo").toLowerCase() as "todo" | "inprogress" | "done")]
+        })
+        return (
+          <div key={group.projectName} className="mb-8">
+            <div className="mb-1 text-lg font-semibold text-muted-foreground">{group.projectName}</div>
+            <div className="border-b mb-3" />
+            <ul className="space-y-2">
+              {sortedTasks.map((task: any) => (
+                <TaskListItem key={task.taskId} task={task} onToggle={() => handleToggle(task.projectId, task)} />
+              ))}
+            </ul>
+          </div>
+        )
+      })}
     </>
   )
 }
 
-function TaskListItem({ task }: { task: any }) {
+function TaskListItem({ task, onToggle }: { task: any, onToggle: () => void }) {
   const [open, setOpen] = useState(false)
   const handleOpenChange = (v: boolean) => setOpen(v)
+  const status = typeof task.status === 'string' ? task.status.trim().toLowerCase() : 'todo';
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <li
-          className="flex items-center gap-2 p-3 rounded-md border bg-white select-none"
+          className={`flex items-center gap-2 p-3 rounded-md border select-none transition-colors duration-150 ${status === "done" ? "bg-green-50 border-green-200" : "bg-white border-muted"}`}
         >
-          <span className="w-6 h-6 flex items-center justify-center rounded-sm border-2 border-muted bg-muted/30 mr-2" />
+          <span
+            className={`w-6 h-6 flex items-center justify-center rounded-sm border-2 mr-2 cursor-pointer transition-colors duration-150 ${status === "done" ? "bg-green-200 border-green-400" : "bg-white border-muted"}`}
+            onClick={e => { e.stopPropagation(); onToggle(); }}
+          >
+            {status === "done" && (
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            )}
+          </span>
           <span className="flex-1 font-medium text-foreground text-base">{task.title}</span>
           {task.dueDate ? (
             <span className="text-sm text-muted-foreground ml-2 whitespace-nowrap">
