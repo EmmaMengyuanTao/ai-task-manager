@@ -9,7 +9,6 @@ RUN npm install -g pnpm
 RUN pnpm install
 
 COPY . .
-COPY .env.production .env
 
 RUN pnpm build
 

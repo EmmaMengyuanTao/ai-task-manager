@@ -19,6 +19,18 @@ services:
       - '5433:80'
     depends_on:
       - postgres
+  
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: better-auth-next-app-starter:test
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    env_file:
+      - .env.production
 
 volumes:
   postgres_data:
