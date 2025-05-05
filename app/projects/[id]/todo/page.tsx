@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation"
 
 interface PageProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
 
-export default function TodoPage({ params }: PageProps) {
+export default async function TodoPage(props: PageProps) {
+    const params = await props.params;
     redirect(`/projects/${params.id}/subtasks`)
 } 

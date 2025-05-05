@@ -7,10 +7,8 @@ import { skills } from "@/database/schema/skills"
 import { users } from "@/database/schema/auth"
 import { eq, inArray } from "drizzle-orm"
 
-export async function GET(
-    req: Request,
-    { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     try {
         const session = await auth.api.getSession({
             headers: await headers()
