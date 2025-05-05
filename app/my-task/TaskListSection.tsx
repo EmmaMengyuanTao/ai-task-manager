@@ -2,6 +2,22 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useState } from "react"
 import { toast } from "sonner"
+import { AnimatePresence, motion } from "framer-motion"
+
+const listVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -40 },
+  visible: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 40 }
+}
 
 export default function TaskListSection({ grouped }: { grouped: any }) {
 
@@ -58,11 +74,25 @@ export default function TaskListSection({ grouped }: { grouped: any }) {
           <div key={group.projectName} className="mb-8">
             <div className="mb-1 text-lg font-semibold text-muted-foreground">{group.projectName}</div>
             <div className="border-b mb-3" />
-            <ul className="space-y-2">
-              {sortedTasks.map((task: any) => (
-                <TaskListItem key={task.taskId} task={task} onToggle={() => handleToggle(task.projectId, task)} />
-              ))}
-            </ul>
+            <motion.ul
+              className="space-y-2"
+              variants={listVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <AnimatePresence>
+                {sortedTasks.map((task: any, idx: number) => (
+                  <TaskListItem
+                    key={task.taskId}
+                    task={task}
+                    onToggle={() => handleToggle(task.projectId, task)}
+                    MotionWrapper={motion.li}
+                    itemVariants={itemVariants}
+                    transitionDelay={idx * 0.08}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.ul>
           </div>
         )
       })}
@@ -70,14 +100,20 @@ export default function TaskListSection({ grouped }: { grouped: any }) {
   )
 }
 
-function TaskListItem({ task, onToggle }: { task: any, onToggle: () => void }) {
+function TaskListItem({ task, onToggle, MotionWrapper = "li", transitionDelay = 0, itemVariants }: { task: any, onToggle: () => void, MotionWrapper?: any, transitionDelay?: number, itemVariants?: any }) {
   const [open, setOpen] = useState(false)
   const handleOpenChange = (v: boolean) => setOpen(v)
   const status = typeof task.status === 'string' ? task.status.trim().toLowerCase() : 'todo';
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <li
+        <MotionWrapper
+          layout
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={{ type: "spring", stiffness: 500, damping: 30, delay: transitionDelay }}
           className={`flex items-center gap-2 p-3 rounded-md border select-none transition-colors duration-150 ${status === "done" ? "bg-green-50 border-green-200" : "bg-white border-muted"}`}
         >
           <span
@@ -96,7 +132,7 @@ function TaskListItem({ task, onToggle }: { task: any, onToggle: () => void }) {
           ) : (
             <span className="text-sm text-muted-foreground ml-2 whitespace-nowrap">No due date</span>
           )}
-        </li>
+        </MotionWrapper>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
