@@ -17,10 +17,17 @@ interface UserAccountNavProps {
         name: string | null
         email: string | null
         avatarUrl: string | null
-    }
+    } | null
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
+    if (!user) {
+        return (
+            <Link href="/auth/sign-in">
+                <button className="px-4 py-2 rounded bg-primary text-white font-medium hover:bg-primary/90 transition">Login</button>
+            </Link>
+        )
+    }
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -29,15 +29,13 @@ export function Header({ collapsed, setCollapsed }: { collapsed: boolean, setCol
                     </Link>
                 </div>
                 
-                {session && (
-                    <UserAccountNav 
-                        user={{
-                            name: profile?.name ?? session.user.name,
-                            email: session.user.email,
-                            avatarUrl: getAvatarUrl(profile?.avatarId ?? session.user.image)
-                        }} 
-                    />
-                )}
+                <UserAccountNav 
+                    user={session ? {
+                        name: profile?.name ?? session.user.name,
+                        email: session.user.email,
+                        avatarUrl: getAvatarUrl(profile?.avatarId ?? session.user.image)
+                    } : null}
+                />
             </div>
         </header>
     )
