@@ -42,7 +42,7 @@ jobs:
     name: Deploy to ECS
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: false  # defalut
+    if: true  # defalut
 
     steps:
       - name: Configure AWS Credentials
@@ -56,5 +56,5 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster next-app-cluster \
-            --service next-service \
+            --service next-task-service-alb \
             --force-new-deployment
