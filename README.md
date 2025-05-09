@@ -6,8 +6,8 @@
 ## Authors
 
 - [Shiwen(Lareina) Yang](sy796@cornell.edu)
-- [](@cornell.edu)
-- [](@cornell.edu)
+- [Qingxuan Yan](qy264@cornell.edu)
+- [Mengyuan Tao](mt867@cornell.edu)
 
 ## Starter code
 
