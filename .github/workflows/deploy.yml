@@ -27,6 +27,12 @@ jobs:
           | docker login --username AWS \
             --password-stdin 565393074467.dkr.ecr.us-east-1.amazonaws.com
 
+      - name: Print Secret Args (for debug only, will be masked)
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}"
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}"
+          echo "BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}"
+
       - name: Build and Push Docker Image
         run: |
           docker build \
