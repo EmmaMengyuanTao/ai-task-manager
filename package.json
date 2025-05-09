@@ -15,7 +15,8 @@
         "db:migrate-production": "NODE_ENV=production drizzle-kit migrate",
         "db:studio": "drizzle-kit studio",
         "lint": "next lint",
-        "lint:fix": "next lint --fix"
+        "lint:fix": "next lint --fix",
+        "db:push": "drizzle-kit push --config=drizzle.config.ts"
     },
     "dependencies": {
         "@daveyplate/better-auth-tanstack": "^1.2.31",
@@ -75,12 +76,13 @@
         "@types/react-dom": "^19.0.4",
         "@types/ws": "^8.18.0",
         "dotenv": "^16.4.7",
-        "drizzle-kit": "^0.30.5",
+        "drizzle-kit": "^0.30.6",
         "esbuild": "^0.25.1",
         "eslint": "^9.23.0",
         "eslint-config-next": "^15.2.4",
         "tailwindcss": "^4.0.15",
         "tailwindcss-safe-area": "^0.6.0",
+        "ts-node": "^10.9.2",
         "turbo": "^2.4.4",
         "typescript": "^5.8.2"
     },
