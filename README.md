@@ -1,13 +1,21 @@
 # AI Task Manager
 
 - _Date Created_: 26 April 2025
-- _Host URL_: <>
+- _Host URL_: https://www.taskpilot.uk/
 
 ## Authors
 
+- [Mengyuan Tao](mt867@cornell.edu)
+- [Qingxuan Yan](qy264@cornell.edu)
 - [Shiwen(Lareina) Yang](sy796@cornell.edu)
-- [](@cornell.edu)
-- [](@cornell.edu)
+
+## Project Description
+
+AI Task Manager is an AI-powered project management web application designed to improve collaboration and productivity in student group assignments.
+
+One common challenge in student teams is the absence of a designated leader, often resulting in disorganized task management, unclear responsibilities, and uneven workload distribution. AI Task Manager tackles this issue by analyzing project requirements alongside team members' skills to automatically suggest task breakdowns and fair assignments.
+
+By streamlining workflows and ensuring equitable task distribution, the application allows teams to operate efficiently without relying on a formal leader. This boosts overall productivity, reduces conflicts, and helps students focus on delivering high-quality work.
 
 ## Starter code
 

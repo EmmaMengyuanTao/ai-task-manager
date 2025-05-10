@@ -1,13 +1,13 @@
-import "dotenv/config"
-
+import { config } from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
+import * as path from 'path';
 
-const url =
-  process.env.NODE_ENV === 'production' ? process.env.DATABASE_URL : process.env.LOCAL_DATABASE_URL;
+config({ path: path.resolve(__dirname, '.env.production') });
+
+const url = process.env.DATABASE_URL;
 if (!url)
-  throw new Error(
-    `Connection string to ${process.env.NODE_ENV ? 'Neon' : 'local'} Postgres not found.`
-  );
+  throw new Error("DATABASE_URL not found in environment variables.");
+
 export default defineConfig({
   out: './database/migrations',
   schema: './database/schema/*',

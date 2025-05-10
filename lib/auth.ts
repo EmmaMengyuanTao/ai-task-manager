@@ -18,7 +18,7 @@ export const auth = betterAuth({
             // Cache duration in seconds.
             // set to 5 mins for development; 
             // could be a week or longer in production
-            maxAge: 5 * 60 
+            maxAge: 5 * 60
         }
     },
     emailAndPassword: {

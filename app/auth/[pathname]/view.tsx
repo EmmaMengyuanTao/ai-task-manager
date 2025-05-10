@@ -11,6 +11,7 @@ export function AuthView({ pathname }: { pathname: string }) {
     const router = useRouter()
 
     useEffect(() => {
+        fetch('/api/auth/session').then((res) => res.json()).then(console.log);
         router.refresh()
     }, [router])
 
