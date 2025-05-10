@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -9,11 +9,13 @@ import { getAllSkills } from "@/lib/skills";
 import dotenv from 'dotenv';
 dotenv.config();
 
-if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is not set in environment variables");
+if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is not set in environment variables");
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(request: Request) {
     try {
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
         // Get predefined skills
         const predefinedSkills = getAllSkills();
 
-        // Prepare prompt for Gemini
+        // Prepare prompt for OpenAI
         const prompt = `
         You are a project management assistant. Your task is to analyze the project and team information, then break it down into subtasks with appropriate assignments.
 
@@ -102,24 +104,23 @@ export async function POST(request: Request) {
         5. The response should be parseable by JSON.parse()
         `;
 
-        console.log("Sending prompt to Gemini:", prompt);
+        console.log("Sending prompt to OpenAI:", prompt);
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-        const result = await model.generateContent({
-            contents: [{
-                role: "user",
-                parts: [{ text: prompt }]
-            }],
-            generationConfig: {
-                temperature: 0.2,
-                topP: 0.8,
-                topK: 40,
-            }
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "user",
+                    content: prompt,
+                },
+            ],
+            temperature: 0.2,
+            top_p: 0.8,
         });
-        const response = await result.response;
-        const text = response.text();
 
-        console.log("Received response from Gemini:", text);
+        const text = completion.choices[0].message.content || "";
+
+        console.log("Received response from OpenAI:", text);
 
         // Clean the response text to ensure it's valid JSON
         const cleanedText = text.trim()
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
                 subtasks: parsedResponse.subtasks
             });
         } catch (error) {
-            console.error("Error parsing Gemini response:", error);
+            console.error("Error parsing OpenAI response:", error);
             console.error("Raw response:", cleanedText);
             return NextResponse.json({
                 error: "Failed to parse AI response",
@@ -155,7 +156,7 @@ export async function POST(request: Request) {
             }, { status: 500 });
         }
     } catch (error) {
-        console.error("Error in Gemini API route:", error);
+        console.error("Error in OpenAI API route:", error);
         return NextResponse.json({
             error: "Internal server error",
             details: error instanceof Error ? error.message : "Unknown error"
