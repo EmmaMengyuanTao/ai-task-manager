@@ -33,6 +33,7 @@ jobs:
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}"
           echo "BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}"
           echo "BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }}"
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"
 
       - name: Build and Push Docker Image
         run: |
@@ -41,6 +42,7 @@ jobs:
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --build-arg BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }} \
             --build-arg BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }} \
+            --build-arg OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
             -t ai-project-manager .
 
           docker tag ai-project-manager:latest 565393074467.dkr.ecr.us-east-1.amazonaws.com/ai-project-manager:latest
